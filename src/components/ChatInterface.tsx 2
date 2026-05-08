@@ -1,0 +1,185 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, User, Sparkles, Loader2, Glasses, Phone } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { cn } from '../lib/utils';
+import { geminiService, Message } from '../services/gemini';
+import { motion, AnimatePresence } from 'motion/react';
+
+type Mood = 'very-bad' | 'bad' | 'neutral' | 'good' | 'very-good';
+
+interface ChatInterfaceProps {
+  currentMood: Mood | null;
+}
+
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentMood: initialMood }) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedMood, setSelectedMood] = useState<Mood | null>(initialMood);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: 'smooth'
+    });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    const triggerInitialGreeting = async () => {
+      if (messages.length === 0 && !isLoading) {
+        setIsLoading(true);
+        const greeting = await geminiService.chat([], "(System: Begrüße den Nutzer herzlich als Fabi. Nutze Emojis und biete deine Hilfe an.)");
+        setMessages([{ role: 'model', text: greeting || 'Hallo! 👋 Ich bin Fabi. Schön, dass du da bist. Wie kann ich dir heute helfen? ✨' }]);
+        setIsLoading(false);
+      }
+    };
+    triggerInitialGreeting();
+  }, []);
+
+  const moodLabels: Record<Mood, string> = {
+    'very-bad': 'sehr schlecht',
+    'bad': 'schlecht',
+    'neutral': 'durchwachsen',
+    'good': 'gut',
+    'very-good': 'sehr gut'
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    setIsLoading(true);
+
+    const userMessageCount = messages.filter(m => m.role === 'user').length;
+    const contextMessage = userMessageCount === 0 && selectedMood 
+      ? `(Kontext: Der Nutzer fühlt sich gerade ${moodLabels[selectedMood]}). ${userMessage}`
+      : userMessage;
+
+    const response = await geminiService.chat(messages, contextMessage);
+    setMessages(prev => [...prev, { role: 'model', text: response || '' }]);
+    setIsLoading(false);
+  };
+
+  const moodOptions: { type: Mood; emoji: string; label: string }[] = [
+    { type: 'very-bad', emoji: '😞', label: 'schlecht' },
+    { type: 'neutral', emoji: '😐', label: 'neutral' },
+    { type: 'good', emoji: '😊', label: 'gut' }
+  ];
+
+  return (
+    <div className="flex flex-col h-full glass-card overflow-hidden">
+      <div 
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-4 py-2 space-y-4 scrollbar-thin scrollbar-thumb-slate-200"
+      >
+        {messages.length === 0 && (
+          <div className="flex flex-col gap-6 p-4">
+            <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-2xl">
+                <p className="text-[11px] text-amber-800 leading-relaxed italic">
+                    <strong>Wichtiger Hinweis:</strong> Fabi ist eine KI zur Begleitung, kein Ersatz für eine ärztliche oder psychotherapeutische Behandlung. In akuten Krisen wende dich bitte sofort an den Notruf <strong>112</strong> oder die Telefonseelsorge unter <strong>0800 1110111</strong>.
+                </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center text-center space-y-4">
+                <h2 className="text-2xl font-serif italic text-slate-800">Ich bin für dich da. 👋</h2>
+                <p className="text-slate-500 max-w-sm font-serif italic text-sm">
+                    Schreib mir einfach, was dich gerade bewegt. Ich höre dir zu. ✨
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center mt-4">
+                    <button onClick={() => setInput("Ich fühle mich heute sehr allein...")} className="text-[10px] uppercase font-bold text-blue-600 bg-blue-50 px-3 py-2 rounded-full hover:bg-blue-100 transition-colors border border-blue-100 italic shadow-sm">Ich fühle mich allein 🫂</button>
+                    <button onClick={() => setInput("Hast du Tipps gegen akute Angst?")} className="text-[10px] uppercase font-bold text-blue-600 bg-blue-50 px-3 py-2 rounded-full hover:bg-blue-100 transition-colors border border-blue-100 italic shadow-sm">Brauche Beruhigung 🌿</button>
+                </div>
+            </div>
+          </div>
+        )}
+
+        <AnimatePresence mode="popLayout">
+          {messages.map((m, i) => (
+            <motion.div 
+              key={`group-${i}`} 
+              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col w-full"
+            >
+              <div className={cn("flex w-full", m.role === 'user' ? "justify-end" : "justify-start")}>
+                <div className={cn("flex flex-col max-w-[85%]", m.role === 'user' ? "items-end" : "items-start")}>
+                  {m.role === 'model' && (
+                    <span className="text-[10px] text-slate-400 font-medium px-4 mb-3 uppercase tracking-[0.15em] italic">Fabi</span>
+                  )}
+                  <div className={cn(
+                    "p-4 rounded-[24px] text-base leading-relaxed shadow-sm",
+                    m.role === 'user' ? "bg-blue-600 text-white rounded-tr-none shadow-blue-100" : "bg-white text-slate-800 rounded-tl-none border border-slate-100 shadow-md"
+                  )}>
+                    <div className={cn("prose prose-sm max-w-none font-sans", m.role === 'user' ? "prose-invert" : "prose-slate")}>
+                      <ReactMarkdown>{m.text}</ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {i === 0 && m.role === 'model' && messages.length === 1 && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="flex flex-col gap-3 py-4">
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest px-1 font-medium">Wie geht es dir gerade?</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {moodOptions.map((opt) => (
+                      <button key={opt.type} onClick={() => setSelectedMood(opt.type)} className={cn("flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm transition-all border shadow-sm", selectedMood === opt.type ? "bg-blue-600 text-white border-blue-600 scale-105 shadow-md" : "bg-white text-slate-600 border-slate-100 hover:border-blue-200 hover:bg-blue-50/30")}>
+                        <span className="text-base">{opt.emoji}</span>
+                        <span className="font-medium">{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          ))}
+          
+          {isLoading && (
+            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="flex justify-start">
+              <div className="flex flex-col items-start max-w-[85%]">
+                <span className="text-[10px] text-slate-400 font-medium px-4 mb-3 uppercase tracking-[0.15em] italic">Fabi</span>
+                <div className="flex items-center gap-3 bg-white/40 backdrop-blur-sm px-5 py-3 rounded-full border border-white/60 shadow-sm ml-0">
+                  <div className="flex space-x-1 items-center">
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="p-3 bg-white border-t border-slate-100 block shrink-0 relative z-20">
+        <div className="relative flex items-end gap-2 max-w-4xl mx-auto">
+          <div className="relative flex-1">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+              placeholder="Schreib etwas an Fabi..."
+              rows={1}
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all text-slate-800 placeholder:text-slate-400 shadow-inner text-base min-h-[58px] max-h-32 resize-none leading-normal font-sans"
+            />
+          </div>
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || isLoading}
+            className="p-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 disabled:bg-slate-100 disabled:text-slate-300 disabled:shadow-none transition-all shadow-lg active:scale-95 shrink-0 flex items-center justify-center min-h-[58px] w-[58px]"
+          >
+            {isLoading ? <Loader2 size={24} className="animate-spin" /> : <Send size={24} />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+      
