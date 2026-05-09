@@ -1,6 +1,5 @@
 import React from 'react';
 import { ChatInterface } from './components/ChatInterface';
-import { motion } from 'framer-motion';
 
 export default function App() {
   return (
