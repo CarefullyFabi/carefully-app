@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Heart, Sparkles } from 'lucide-react';
+import { Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { geminiService, type Message as GeminiMessage } from '../services/gemini';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
+
+type Mood = 'very-bad' | 'neutral' | 'good';
 
 interface Message {
   id: string;
@@ -28,10 +31,23 @@ const WELCOME_MESSAGE: Message = {
   timestamp: new Date(),
 };
 
+const moodOptions: { type: Mood; emoji: string; label: string }[] = [
+  { type: 'very-bad', emoji: '😞', label: 'schlecht' },
+  { type: 'neutral', emoji: '😐', label: 'neutral' },
+  { type: 'good', emoji: '😊', label: 'gut' },
+];
+
+const moodMessages: Record<Mood, string> = {
+  'very-bad': 'Mir geht es gerade sehr schlecht...',
+  'neutral': 'Mir geht es so mittelmässig heute.',
+  'good': 'Mir geht es heute gut!',
+};
+
 export function ChatInterface({ currentMood }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -48,9 +64,11 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
     }
   }, [input]);
 
-  const handleSend = () => {
-    const trimmed = input.trim();
-    if (!trimmed) return;
+  const handleSend = async (directMessage?: string) => {
+    const trimmed = directMessage || input.trim();
+    if (!trimmed || isTyping) return;
+
+    if (!directMessage) setInput('');
 
     const userMsg: Message = {
       id: `user-${Date.now()}`,
@@ -60,19 +78,41 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    setInput('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      const history: GeminiMessage[] = messages
+        .filter((m) => m.id !== 'welcome')
+        .map((m) => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          text: m.content,
+        }));
+
+      const replyText = await geminiService.chat(history, trimmed);
+
       const reply: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: getReply(trimmed),
+        content: replyText,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, reply]);
+    } catch {
+      const errorMsg: Message = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: 'Entschuldige, ich habe gerade Schwierigkeiten. Bitte versuche es nochmal.',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
       setIsTyping(false);
-    }, 1200 + Math.random() * 800);
+    }
+  };
+
+  const handleMoodSelect = (mood: Mood) => {
+    setSelectedMood(mood);
+    handleSend(moodMessages[mood]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -82,42 +122,89 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
     }
   };
 
+  const showMoodButtons = messages.length === 1 && messages[0].id === 'welcome' && !isTyping;
+
   return (
     <div className="flex flex-col h-full min-h-0">
+      <div className="shrink-0 flex flex-col gap-1.5 px-3 pt-2">
+        <div className="bg-amber-50/60 border border-amber-200 p-2 rounded-xl">
+          <p className="text-[10px] text-amber-800 leading-relaxed">
+            <strong>Wichtiger Hinweis:</strong> Dies ist eine KI-gestützte Anwendung und ersetzt keine professionelle ärztliche oder psychotherapeutische Behandlung.
+          </p>
+        </div>
+        <div className="bg-red-50/60 border border-red-200 p-2 rounded-xl">
+          <p className="text-[10px] text-red-700 leading-relaxed">
+            <strong>Notfall:</strong> In akuten Krisen wende dich sofort an den <strong>Notruf 112</strong> oder die <strong>Telefonseelsorge 0800 1110111</strong>.
+          </p>
+        </div>
+      </div>
+
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 scroll-smooth"
         style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}
       >
-        <div className="flex flex-col gap-3 py-2">
+        <div className="flex flex-col gap-3 py-2 px-1">
           <AnimatePresence initial={false}>
-            {messages.map((msg) => (
+            {messages.map((msg, i) => (
               <motion.div
                 key={msg.id}
                 initial={{ opacity: 0, y: 12, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-                className={cn(
-                  'flex',
-                  msg.role === 'user' ? 'justify-end' : 'justify-start'
-                )}
+                className="flex flex-col w-full"
               >
                 <div
                   className={cn(
-                    'max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed',
-                    msg.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-br-md shadow-sm shadow-blue-200/50'
-                      : 'bg-white/80 text-slate-700 rounded-bl-md shadow-sm border border-slate-100/80 backdrop-blur-sm'
+                    'flex w-full',
+                    msg.role === 'user' ? 'justify-end' : 'justify-start'
                   )}
                 >
-                  {msg.role === 'assistant' ? (
-                    <div className="prose prose-sm prose-slate max-w-none [&_p]:m-0 [&_p+p]:mt-2">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
-                    </div>
-                  ) : (
-                    <p className="m-0 whitespace-pre-wrap">{msg.content}</p>
-                  )}
+                  <div
+                    className={cn(
+                      'max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed',
+                      msg.role === 'user'
+                        ? 'bg-blue-600 text-white rounded-br-md shadow-sm shadow-blue-200/50'
+                        : 'bg-white/80 text-slate-700 rounded-bl-md shadow-sm border border-slate-100/80 backdrop-blur-sm'
+                    )}
+                  >
+                    {msg.role === 'assistant' ? (
+                      <div className="prose prose-sm prose-slate max-w-none [&_p]:m-0 [&_p+p]:mt-2">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="m-0 whitespace-pre-wrap">{msg.content}</p>
+                    )}
+                  </div>
                 </div>
+
+                {i === 0 && msg.id === 'welcome' && showMoodButtons && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="flex flex-col gap-2 py-3 px-1"
+                  >
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">Wie geht es dir gerade?</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {moodOptions.map((opt) => (
+                        <button
+                          key={opt.type}
+                          onClick={() => handleMoodSelect(opt.type)}
+                          className={cn(
+                            'flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm transition-all border shadow-sm',
+                            selectedMood === opt.type
+                              ? 'bg-blue-600 text-white border-blue-600 scale-105 shadow-md'
+                              : 'bg-white text-slate-600 border-slate-100 hover:border-blue-200 hover:bg-blue-50/30'
+                          )}
+                        >
+                          <span className="text-base">{opt.emoji}</span>
+                          <span className="font-medium">{opt.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -168,7 +255,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.92 }}
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={!input.trim()}
             className={cn(
               'shrink-0 flex items-center justify-center w-9 h-9 rounded-xl transition-colors',
@@ -183,24 +270,4 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
       </div>
     </div>
   );
-}
-
-function getReply(userMessage: string): string {
-  const lower = userMessage.toLowerCase();
-  if (lower.match(/traurig|weinen|schlecht|down|einsam|allein/)) {
-    return 'Es tut mir leid, dass du dich so fühlst. Es ist völlig in Ordnung, traurig zu sein — das zeigt, dass dir etwas wichtig ist. Magst du mir mehr darüber erzählen?';
-  }
-  if (lower.match(/angst|sorge|panik|stress|überfordert|nervös/)) {
-    return 'Das klingt belastend. Lass uns zusammen einen Moment innehalten. Versuch einmal, tief ein- und auszuatmen. Was genau macht dir gerade am meisten Sorgen?';
-  }
-  if (lower.match(/gut|super|toll|freude|glücklich|happy|froh/)) {
-    return 'Das freut mich sehr zu hören! Was hat dir heute besonders gutgetan? Manchmal hilft es, sich die schönen Momente bewusst zu machen.';
-  }
-  if (lower.match(/danke|dankbar/)) {
-    return 'Gerne. Ich bin immer hier, wenn du mich brauchst. Gibt es noch etwas, worüber du reden möchtest?';
-  }
-  if (lower.match(/hallo|hi|hey|moin|servus|grüß/)) {
-    return 'Schön, von dir zu hören. Wie geht es dir gerade? Nimm dir ruhig Zeit, es gibt hier keinen Druck.';
-  }
-  return 'Danke, dass du das mit mir teilst. Magst du mir noch etwas mehr darüber erzählen? Ich höre dir gerne zu.';
 }
