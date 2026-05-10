@@ -1,40 +1,26 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
 export interface Message {
   role: 'user' | 'model';
   text: string;
 }
 
-// Holt den Key sicher aus der Umgebungsvariable (wird später in Vercel gesetzt)
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
-const genAI = new GoogleGenerativeAI(API_KEY);
-
 export const geminiService = {
   chat: async (history: Message[], prompt: string): Promise<string> => {
     try {
-      const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
-        generationConfig: {
-          maxOutputTokens: 500,
-          temperature: 0.8,
-        }
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ history, prompt }),
       });
 
-      const chatHistory = history.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }],
-      }));
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
 
-      const chat = model.startChat({
-        history: chatHistory,
-      });
-
-      const result = await chat.sendMessage(prompt);
-      const response = await result.response;
-      return response.text();
+      const data = await response.json();
+      return data.text || '';
     } catch (error) {
-      console.error("Fehler beim Gemini-Chat:", error);
-      return "Entschuldige, ich habe gerade Schwierigkeiten, dich zu verstehen. ✨";
+      console.error("Fehler beim Chat:", error);
+      return "Entschuldige, ich habe gerade Schwierigkeiten. Bitte versuche es nochmal. ✨";
     }
   }
 };

@@ -7,10 +7,14 @@
   background-color: #f8fafc;
 }
 
-body {
+html, body, #root {
   margin: 0;
+  padding: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body {
   display: flex;
-  place-items: center;
   min-width: 320px;
-  min-height: 100vh;
 }
