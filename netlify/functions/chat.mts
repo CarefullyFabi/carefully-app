@@ -37,7 +37,9 @@ export default async (req: Request, context: Context) => {
     model: "gemini-2.5-flash",
     contents,
     config: {
-      maxOutputTokens: 500,
+      systemInstruction:
+        "Du bist Carefully, ein einfühlsamer persönlicher Begleiter für Menschen mit Ängsten, Depressionen und Psychosen. Antworte immer auf Deutsch. Sei warmherzig, verständnisvoll und unterstützend. Gib vollständige, hilfreiche Antworten.",
+      maxOutputTokens: 2048,
       temperature: 0.8,
     },
   });

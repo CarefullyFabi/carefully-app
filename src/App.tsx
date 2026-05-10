@@ -11,12 +11,12 @@ export default function App() {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto w-full px-3 md:px-10 pt-4 md:pt-8 flex flex-col h-[100dvh] overflow-hidden">
-        <header className="flex items-center justify-between mb-2 md:mb-4 shrink-0">
-          <div>
-            <h1 className="text-lg md:text-xl font-medium text-slate-800 tracking-tight italic font-serif leading-tight">Carefully</h1>
+        <header className="flex flex-col items-center mb-2 md:mb-4 shrink-0">
+          <div className="text-center">
+            <h1 className="text-3xl md:text-4xl font-medium text-slate-800 tracking-tight italic font-serif leading-tight">Carefully</h1>
             <p className="text-[9px] md:text-[10px] text-blue-600 font-medium uppercase tracking-[0.15em] mt-0.5 leading-tight">Dein persönlicher Begleiter bei Ängsten, Depressionen, Psychosen</p>
           </div>
-          <a href="tel:112" className="bg-red-50 text-red-600 border border-red-100 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-red-100 transition-colors flex items-center gap-2 shadow-sm shrink-0">
+          <a href="tel:112" className="mt-2 bg-red-50 text-red-600 border border-red-100 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-red-100 transition-colors flex items-center gap-2 shadow-sm shrink-0">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
