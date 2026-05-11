@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChatInterface } from './components/ChatInterface';
 
 export default function App() {
+  const [showImpressum, setShowImpressum] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden flex flex-col">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -29,11 +31,47 @@ export default function App() {
           <ChatInterface currentMood={null} />
         </main>
 
-        <footer className="shrink-0 flex justify-center items-center py-2 border-t border-slate-200/50">
+        <footer className="shrink-0 flex flex-col justify-center items-center py-2 border-t border-slate-200/50 gap-0.5">
           <p className="text-[10px] text-slate-400 font-medium tracking-wider">
-            © ❤️ mit Liebe gemacht von Fabian Matthey
+            © ❤️ mit Liebe gemacht von{' '}
+            <button
+              onClick={() => setShowImpressum(true)}
+              className="underline hover:text-slate-600 transition-colors cursor-pointer"
+            >
+              Fabian Matthey
+            </button>
+          </p>
+          <p className="text-[10px] text-slate-400 font-medium tracking-wider">
+            Für Sunny.
           </p>
         </footer>
+
+        {showImpressum && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowImpressum(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-[90%] p-6 relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowImpressum(false)}
+                className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 transition-colors text-lg leading-none cursor-pointer"
+                aria-label="Schließen"
+              >
+                ✕
+              </button>
+              <h2 className="text-lg font-semibold text-slate-800 mb-4">Impressum</h2>
+              <div className="text-sm text-slate-600 space-y-1">
+                <p className="font-medium text-slate-700">Fabian Matthey</p>
+                <p>Rigaer Str. 23</p>
+                <p>97980 Bad Mergentheim</p>
+                <p>Deutschland</p>
+                <p className="mt-3">
+                  E-Mail:{' '}
+                  <a href="mailto:einkonto44@gmail.com" className="text-blue-600 hover:underline">
+                    einkonto44@gmail.com
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

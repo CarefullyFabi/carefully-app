@@ -137,6 +137,9 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
             <strong>Notfall:</strong> In akuten Krisen wende dich sofort an den <strong>Notruf 112</strong> oder die <strong>Telefonseelsorge 0800 1110111</strong>.
           </p>
         </div>
+        <p className="text-[9px] text-gray-400 text-left leading-relaxed px-2">
+          Die Chats sind privat. Sie werden weder mitgelesen noch gespeichert. Beim schließen des Chatfensters werden sämtliche Daten gelöscht.
+        </p>
       </div>
 
       <div
