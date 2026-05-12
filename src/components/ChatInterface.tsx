@@ -150,7 +150,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
         className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 scroll-smooth"
         style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
       >
-        <div className="flex flex-col gap-3 py-2 px-1">
+        <div className="flex flex-col gap-3 py-2 px-1 min-h-full justify-end">
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
               <motion.div
