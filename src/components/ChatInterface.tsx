@@ -53,7 +53,10 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
     }
   }, [messages, isTyping]);
 
@@ -126,7 +129,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="shrink-0 flex flex-col gap-1.5 px-3 pt-2">
+      <div className="shrink-0 flex flex-col gap-1.5 px-3 pt-2 chat-notices">
         <div className="bg-amber-50/60 border border-amber-200 p-2 rounded-xl">
           <p className="text-[10px] text-amber-800 leading-relaxed">
             <strong>Wichtiger Hinweis:</strong> Dies ist eine KI-gestützte Anwendung und ersetzt keine professionelle ärztliche oder psychotherapeutische Behandlung.
@@ -137,7 +140,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
             <strong>Notfall:</strong> In akuten Krisen wende dich sofort an den <strong>Notruf 112</strong> oder die <strong>Telefonseelsorge 0800 1110111</strong>.
           </p>
         </div>
-        <p className="text-[9px] text-gray-400 text-left leading-relaxed px-2">
+        <p className="text-[9px] text-gray-400 text-left leading-relaxed px-2 privacy-notice">
           Die Chats sind privat. Sie werden weder mitgelesen noch gespeichert. Beim schließen des Chatfensters werden sämtliche Daten gelöscht.
         </p>
       </div>
@@ -145,7 +148,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 scroll-smooth"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
       >
         <div className="flex flex-col gap-3 py-2 px-1">
           <AnimatePresence initial={false}>
@@ -165,14 +168,14 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
                 >
                   <div
                     className={cn(
-                      'max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed',
+                      'max-w-[85%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[65%] rounded-2xl px-4 py-3 text-sm leading-relaxed',
                       msg.role === 'user'
                         ? 'bg-blue-600 text-white rounded-br-md shadow-sm shadow-blue-200/50'
                         : 'bg-white/80 text-slate-700 rounded-bl-md shadow-sm border border-slate-100/80 backdrop-blur-sm'
                     )}
                   >
                     {msg.role === 'assistant' ? (
-                      <div className="prose prose-sm prose-slate max-w-none [&_p]:m-0 [&_p+p]:mt-2">
+                      <div className="prose prose-sm prose-slate max-w-none [&_p]:m-0 [&_p+p]:mt-2 chat-bubble-scroll">
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                       </div>
                     ) : (
@@ -244,7 +247,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
         </div>
       </div>
 
-      <div className="shrink-0 pt-3">
+      <div className="shrink-0 pt-3 chat-input-area">
         <div className="flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60">
           <textarea
             ref={inputRef}

@@ -18,3 +18,114 @@ body {
   display: flex;
   min-width: 320px;
 }
+
+/* Cross-browser scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Internal scroll for long assistant messages */
+.chat-bubble-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+}
+
+.chat-bubble-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.chat-bubble-scroll::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+
+/* Landscape mode on phones (short viewport) */
+@media (orientation: landscape) and (max-height: 500px) {
+  .app-header {
+    margin-bottom: 0.25rem !important;
+    padding-top: 0.25rem !important;
+  }
+
+  .app-header h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .app-subtitle {
+    display: none;
+  }
+
+  .app-emergency {
+    margin-top: 0.25rem !important;
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+  }
+
+  .chat-notices {
+    padding-top: 0.25rem !important;
+    gap: 0.25rem !important;
+  }
+
+  .chat-notices > div {
+    padding: 0.2rem 0.5rem !important;
+  }
+
+  .privacy-notice {
+    display: none;
+  }
+
+  .app-footer {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  .chat-input-area {
+    padding-top: 0.25rem !important;
+  }
+
+  .app-container {
+    padding-top: 0.25rem !important;
+  }
+
+  .chat-bubble-scroll {
+    max-height: 45vh;
+  }
+}
+
+/* Tablet landscape */
+@media (min-width: 768px) and (orientation: landscape) {
+  .chat-bubble-scroll {
+    max-height: 50vh;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .chat-bubble-scroll {
+    max-height: 55vh;
+  }
+}
+
+/* "Request Desktop Site" on mobile: wide viewport + touch device */
+@media (min-width: 980px) and (pointer: coarse) {
+  .app-container {
+    max-width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
