@@ -49,14 +49,13 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
     requestAnimationFrame(() => {
-      if (bottomRef.current) {
-        bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
     });
   }, [messages, isTyping]);
 
@@ -128,35 +127,35 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
   const showMoodButtons = messages.length === 1 && messages[0].id === 'welcome' && !isTyping;
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      <div className="shrink-0 flex flex-col gap-1.5 px-3 pt-2 chat-notices">
-        <div className="bg-amber-50/60 border border-amber-200 p-2 rounded-xl">
-          <p className="text-[0.625rem] text-amber-800 leading-relaxed">
-            <strong>Wichtiger Hinweis:</strong> Dies ist eine KI-gestützte Anwendung und ersetzt keine professionelle ärztliche oder psychotherapeutische Behandlung.
-          </p>
-        </div>
-        <div className="bg-red-50/60 border border-red-200 p-2 rounded-xl">
-          <p className="text-[0.625rem] text-red-700 leading-relaxed">
-            <strong>Notfall:</strong> In akuten Krisen wende dich sofort an den <strong>Notruf 112</strong> oder die <strong>Telefonseelsorge 0800 1110111</strong>.
-          </p>
-        </div>
-        <p className="text-[0.5625rem] text-gray-400 text-left leading-relaxed px-2 privacy-notice">
-          Die Chats sind privat. Sie werden weder mitgelesen noch gespeichert. Beim schließen des Chatfensters werden sämtliche Daten gelöscht.
-        </p>
-      </div>
-
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 scroll-smooth overscroll-contain"
+        className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 pr-1 -mr-1 scroll-smooth overscroll-contain isolate"
         style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+          <div className="sticky top-0 z-[1] flex flex-col gap-1.5 px-3 pt-2 bg-[#F8F9FA] chat-notices">
+            <div className="bg-amber-50/60 border border-amber-200 p-2 rounded-xl">
+              <p className="text-[0.625rem] text-amber-800 leading-relaxed">
+                <strong>Wichtiger Hinweis:</strong> Dies ist eine KI-gestützte Anwendung und ersetzt keine professionelle ärztliche oder psychotherapeutische Behandlung.
+              </p>
+            </div>
+            <div className="bg-red-50/60 border border-red-200 p-2 rounded-xl">
+              <p className="text-[0.625rem] text-red-700 leading-relaxed">
+                <strong>Notfall:</strong> In akuten Krisen wende dich sofort an den <strong>Notruf 112</strong> oder die <strong>Telefonseelsorge 0800 1110111</strong>.
+              </p>
+            </div>
+            <p className="text-[0.5625rem] text-gray-400 text-left leading-relaxed px-2 privacy-notice">
+              Die Chats sind privat. Sie werden weder mitgelesen noch gespeichert. Beim schließen des Chatfensters werden sämtliche Daten gelöscht.
+            </p>
+          </div>
           <div style={{ flex: 1 }} />
-          <div className="pt-4 pb-2 px-1">
+          <div className="relative z-[2] pt-4 pb-2 px-1">
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
               <motion.div
                 key={msg.id}
+                id={`msg-${msg.id}`}
                 initial={{ opacity: 0, y: 12, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
@@ -256,7 +255,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
               </motion.div>
             )}
           </AnimatePresence>
-          <div id="anchor" ref={bottomRef} />
+          <div id="anchor" />
           </div>
         </div>
       </div>
