@@ -49,14 +49,13 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
+    const anchor = document.getElementById('anchor');
+    if (anchor) {
+      anchor.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isTyping]);
 
@@ -148,9 +147,9 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 scroll-smooth overscroll-contain"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent', WebkitOverflowScrolling: 'touch' }}
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent', WebkitOverflowScrolling: 'touch', display: 'flex', flexDirection: 'column', height: '100%' }}
       >
-        <div className="flex flex-col gap-3 py-2 px-1 min-h-full justify-end">
+        <div className="flex flex-col py-2 px-1" style={{ marginTop: 'auto' }}>
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
               <motion.div
@@ -159,6 +158,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
                 className="flex flex-col w-full"
+                style={{ marginBottom: '20px' }}
               >
                 <div
                   className={cn(
@@ -168,11 +168,18 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
                 >
                   <div
                     className={cn(
-                      'max-w-[85%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[65%] rounded-2xl px-4 py-3 text-sm leading-relaxed',
+                      'max-w-[85%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[65%] px-4 py-3 text-sm leading-relaxed shadow-sm',
                       msg.role === 'user'
-                        ? 'bg-blue-600 text-white rounded-br-md shadow-sm shadow-blue-200/50'
-                        : 'bg-white/80 text-slate-700 rounded-bl-md shadow-sm border border-slate-100/80 backdrop-blur-sm'
+                        ? 'text-slate-700'
+                        : 'text-slate-700'
                     )}
+                    style={{
+                      borderRadius: '20px',
+                      ...(msg.role === 'user'
+                        ? { backgroundColor: '#DCE8FF', borderBottomRightRadius: '6px' }
+                        : { backgroundColor: '#FEF3E7', borderBottomLeftRadius: '6px' }
+                      ),
+                    }}
                   >
                     {msg.role === 'assistant' ? (
                       <div className="prose prose-sm prose-slate max-w-none [&_p]:m-0 [&_p+p]:mt-2">
@@ -198,11 +205,12 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
                           key={opt.type}
                           onClick={() => handleMoodSelect(opt.type)}
                           className={cn(
-                            'flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm transition-all border shadow-sm',
+                            'flex items-center gap-1.5 px-3 py-2 text-sm transition-all border shadow-sm',
                             selectedMood === opt.type
                               ? 'bg-blue-600 text-white border-blue-600 scale-105 shadow-md'
                               : 'bg-white text-slate-600 border-slate-100 hover:border-blue-200 hover:bg-blue-50/30'
                           )}
+                          style={{ borderRadius: '20px' }}
                         >
                           <span className="text-base">{opt.emoji}</span>
                           <span className="font-medium">{opt.label}</span>
@@ -223,8 +231,9 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.25 }}
                 className="flex justify-start"
+                style={{ marginBottom: '20px' }}
               >
-                <div className="bg-white/80 border border-slate-100/80 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm backdrop-blur-sm">
+                <div className="px-4 py-3 shadow-sm" style={{ backgroundColor: '#FEF3E7', borderRadius: '20px', borderBottomLeftRadius: '6px' }}>
                   <div className="flex items-center gap-1.5">
                     {[0, 1, 2].map((i) => (
                       <motion.span
@@ -244,6 +253,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
               </motion.div>
             )}
           </AnimatePresence>
+          <div id="anchor" ref={bottomRef} />
         </div>
       </div>
 
