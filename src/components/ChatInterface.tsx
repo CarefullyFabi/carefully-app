@@ -125,6 +125,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
   };
 
   const showMoodButtons = messages.length === 1 && messages[0].id === 'welcome' && !isTyping;
+  const hasActivity = input.trim().length > 0 || messages.length > 1;
 
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden">
@@ -134,21 +135,30 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
         style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
-          <div className="sticky top-0 z-[1] flex flex-col gap-1.5 px-3 pt-2 bg-[#F8F9FA] chat-notices">
-            <div className="bg-amber-50/60 border border-amber-200 p-2 rounded-xl">
-              <p className="text-[0.625rem] text-amber-800 leading-relaxed">
-                <strong>Wichtiger Hinweis:</strong> Dies ist eine KI-gestützte Anwendung und ersetzt keine professionelle ärztliche oder psychotherapeutische Behandlung.
-              </p>
-            </div>
-            <div className="bg-red-50/60 border border-red-200 p-2 rounded-xl">
-              <p className="text-[0.625rem] text-red-700 leading-relaxed">
-                <strong>Notfall:</strong> In akuten Krisen wende dich sofort an den <strong>Notruf 112</strong> oder die <strong>Telefonseelsorge 0800 1110111</strong>.
-              </p>
-            </div>
-            <p className="text-[0.5625rem] text-gray-400 text-left leading-relaxed px-2 privacy-notice">
-              Die Chats sind privat. Sie werden weder mitgelesen noch gespeichert. Beim schließen des Chatfensters werden sämtliche Daten gelöscht.
-            </p>
-          </div>
+          <AnimatePresence>
+            {!hasActivity && (
+              <motion.div
+                initial={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+                className="sticky top-0 z-[1] flex flex-col gap-1.5 px-3 pt-2 bg-[#F8F9FA] chat-notices"
+              >
+                <div className="bg-amber-50/60 border border-amber-200 p-2 rounded-xl">
+                  <p className="text-[0.625rem] text-amber-800 leading-relaxed">
+                    <strong>Wichtiger Hinweis:</strong> Dies ist eine KI-gestützte Anwendung und ersetzt keine professionelle ärztliche oder psychotherapeutische Behandlung.
+                  </p>
+                </div>
+                <div className="bg-red-50/60 border border-red-200 p-2 rounded-xl">
+                  <p className="text-[0.625rem] text-red-700 leading-relaxed">
+                    <strong>Notfall:</strong> In akuten Krisen wende dich sofort an den <strong>Notruf 112</strong> oder die <strong>Telefonseelsorge 0800 1110111</strong>.
+                  </p>
+                </div>
+                <p className="text-[0.5625rem] text-gray-400 text-left leading-relaxed px-2 privacy-notice">
+                  Die Chats sind privat. Sie werden weder mitgelesen noch gespeichert. Beim schließen des Chatfensters werden sämtliche Daten gelöscht.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div style={{ flex: 1 }} />
           <div className="relative z-[2] pt-4 pb-2 px-1">
           <AnimatePresence initial={false}>
