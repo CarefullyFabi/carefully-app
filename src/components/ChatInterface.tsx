@@ -54,9 +54,8 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
 
   useEffect(() => {
     requestAnimationFrame(() => {
-      const anchor = document.getElementById('anchor');
-      if (anchor) {
-        anchor.scrollIntoView({ behavior: 'smooth' });
+      if (bottomRef.current) {
+        bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }
     });
   }, [messages, isTyping]);
@@ -153,7 +152,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
       >
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
           <div style={{ flex: 1 }} />
-          <div className="py-2 px-1">
+          <div className="pt-4 pb-2 px-1">
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
               <motion.div
@@ -181,7 +180,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
                       borderRadius: '20px',
                       ...(msg.role === 'user'
                         ? { backgroundColor: '#DCE8FF', borderBottomRightRadius: '6px' }
-                        : { backgroundColor: '#FEF3E7', borderBottomLeftRadius: '6px' }
+                        : { backgroundColor: '#F0F0F0', borderBottomLeftRadius: '6px' }
                       ),
                     }}
                   >
@@ -237,7 +236,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
                 className="flex justify-start"
                 style={{ marginBottom: '20px' }}
               >
-                <div className="px-4 py-3 shadow-sm" style={{ backgroundColor: '#FEF3E7', borderRadius: '20px', borderBottomLeftRadius: '6px' }}>
+                <div className="px-4 py-3 shadow-sm" style={{ backgroundColor: '#F0F0F0', borderRadius: '20px', borderBottomLeftRadius: '6px' }}>
                   <div className="flex items-center gap-1.5">
                     {[0, 1, 2].map((i) => (
                       <motion.span
