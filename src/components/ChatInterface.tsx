@@ -131,24 +131,24 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
     <div className="flex flex-col h-full min-h-0">
       <div className="shrink-0 flex flex-col gap-1.5 px-3 pt-2 chat-notices">
         <div className="bg-amber-50/60 border border-amber-200 p-2 rounded-xl">
-          <p className="text-[10px] text-amber-800 leading-relaxed">
+          <p className="text-[0.625rem] text-amber-800 leading-relaxed">
             <strong>Wichtiger Hinweis:</strong> Dies ist eine KI-gestützte Anwendung und ersetzt keine professionelle ärztliche oder psychotherapeutische Behandlung.
           </p>
         </div>
         <div className="bg-red-50/60 border border-red-200 p-2 rounded-xl">
-          <p className="text-[10px] text-red-700 leading-relaxed">
+          <p className="text-[0.625rem] text-red-700 leading-relaxed">
             <strong>Notfall:</strong> In akuten Krisen wende dich sofort an den <strong>Notruf 112</strong> oder die <strong>Telefonseelsorge 0800 1110111</strong>.
           </p>
         </div>
-        <p className="text-[9px] text-gray-400 text-left leading-relaxed px-2 privacy-notice">
+        <p className="text-[0.5625rem] text-gray-400 text-left leading-relaxed px-2 privacy-notice">
           Die Chats sind privat. Sie werden weder mitgelesen noch gespeichert. Beim schließen des Chatfensters werden sämtliche Daten gelöscht.
         </p>
       </div>
 
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 scroll-smooth"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
+        className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 scroll-smooth overscroll-contain"
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent', WebkitOverflowScrolling: 'touch' }}
       >
         <div className="flex flex-col gap-3 py-2 px-1 min-h-full justify-end">
           <AnimatePresence initial={false}>
@@ -191,7 +191,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
                     transition={{ delay: 0.5 }}
                     className="flex flex-col gap-2 py-3 px-1"
                   >
-                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">Wie geht es dir gerade?</p>
+                    <p className="text-[0.625rem] text-slate-400 uppercase tracking-widest font-medium">Wie geht es dir gerade?</p>
                     <div className="flex gap-2 flex-wrap">
                       {moodOptions.map((opt) => (
                         <button
@@ -247,7 +247,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
         </div>
       </div>
 
-      <div className="shrink-0 pt-3 chat-input-area">
+      <div className="shrink-0 pt-3 pb-[env(safe-area-inset-bottom)] chat-input-area">
         <div className="flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60">
           <textarea
             ref={inputRef}
@@ -256,7 +256,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
             onKeyDown={handleKeyDown}
             placeholder="Schreib mir, was dich bewegt..."
             rows={1}
-            className="flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 resize-none outline-none py-1.5 leading-relaxed max-h-[120px]"
+            className="flex-1 bg-transparent text-base md:text-sm text-slate-700 placeholder:text-slate-400 resize-none outline-none py-1.5 leading-relaxed max-h-[7.5rem]"
           />
           <motion.button
             whileHover={{ scale: 1.05 }}
