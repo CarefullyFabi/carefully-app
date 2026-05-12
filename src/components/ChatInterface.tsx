@@ -175,7 +175,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
                     )}
                   >
                     {msg.role === 'assistant' ? (
-                      <div className="prose prose-sm prose-slate max-w-none [&_p]:m-0 [&_p+p]:mt-2 chat-bubble-scroll">
+                      <div className="prose prose-sm prose-slate max-w-none [&_p]:m-0 [&_p+p]:mt-2">
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                       </div>
                     ) : (
