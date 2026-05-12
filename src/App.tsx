@@ -13,7 +13,7 @@ export default function App() {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto w-full flex flex-col h-full overflow-hidden app-container">
-        <header className="flex flex-col items-center mb-2 md:mb-4 shrink-0 app-header">
+        <header className="flex flex-col items-center mb-2 md:mb-4 shrink-0 app-header sticky top-0 z-20 bg-[#F8F9FA]/90 backdrop-blur-sm">
           <div className="text-center">
             <h1 className="text-3xl md:text-4xl font-medium text-slate-800 tracking-tight italic font-serif leading-tight">Carefully</h1>
             <p className="text-[0.5625rem] md:text-[0.625rem] text-blue-600 font-medium uppercase tracking-[0.15em] mt-0.5 leading-tight app-subtitle">Dein persönlicher Begleiter bei Ängsten, Depressionen, Psychosen</p>
