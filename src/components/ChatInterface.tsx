@@ -53,10 +53,12 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const anchor = document.getElementById('anchor');
-    if (anchor) {
-      anchor.scrollIntoView({ behavior: 'smooth' });
-    }
+    requestAnimationFrame(() => {
+      const anchor = document.getElementById('anchor');
+      if (anchor) {
+        anchor.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
   }, [messages, isTyping]);
 
   useEffect(() => {
@@ -147,9 +149,11 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 scroll-smooth overscroll-contain"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent', WebkitOverflowScrolling: 'touch', display: 'flex', flexDirection: 'column', height: '100%' }}
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}
       >
-        <div className="flex flex-col py-2 px-1" style={{ marginTop: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+          <div style={{ flex: 1 }} />
+          <div className="py-2 px-1">
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
               <motion.div
@@ -254,6 +258,7 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
             )}
           </AnimatePresence>
           <div id="anchor" ref={bottomRef} />
+          </div>
         </div>
       </div>
 
