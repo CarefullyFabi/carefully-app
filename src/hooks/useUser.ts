@@ -118,8 +118,10 @@ export function useUser() {
   }, [state.userId, state.isPremium, state.limitReached]);
 
   const startCheckout = useCallback(() => {
-    window.location.href = 'https://buy.stripe.com/fZu7sE0vo29g8oseln18c01';
-  }, []);
+    const url = new URL('https://buy.stripe.com/fZu7sE0vo29g8oseln18c01');
+    url.searchParams.set('client_reference_id', state.userId);
+    window.location.href = url.toString();
+  }, [state.userId]);
 
   return {
     ...state,
