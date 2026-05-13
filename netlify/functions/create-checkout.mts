@@ -50,13 +50,21 @@ export default async (req: Request, context: Context) => {
               "Unbegrenzter Zugang zu Carefully – deinem persönlichen Begleiter",
           },
           unit_amount: 499,
+          recurring: {
+            interval: "month",
+          },
         },
         quantity: 1,
       },
     ],
-    mode: "payment",
+    mode: "subscription",
     success_url: `${siteUrl}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteUrl}?payment_cancelled=true`,
+    subscription_data: {
+      metadata: {
+        userId,
+      },
+    },
     metadata: {
       userId,
     },
