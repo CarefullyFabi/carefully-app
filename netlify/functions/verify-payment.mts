@@ -9,7 +9,7 @@ export default async (req: Request, context: Context) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const secretKey = Netlify.env.get("STRIPE_SECRET_KEY");
   if (!secretKey) {
     return new Response(
       JSON.stringify({ error: "Stripe is not configured" }),
