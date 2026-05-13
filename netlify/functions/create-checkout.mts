@@ -9,7 +9,7 @@ export default async (req: Request, context: Context) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const secretKey = Netlify.env.get("STRIPE_SECRET_KEY");
   if (!secretKey) {
     return new Response(
       JSON.stringify({ error: "Stripe is not configured" }),
@@ -36,7 +36,7 @@ export default async (req: Request, context: Context) => {
 
   const stripe = new Stripe(secretKey);
 
-  const siteUrl = process.env.URL || "http://localhost:8888";
+  const siteUrl = Netlify.env.get("URL") || "http://localhost:8888";
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -75,7 +75,7 @@ export default async (req: Request, context: Context) => {
     .set({ stripeSessionId: session.id, updatedAt: new Date() })
     .where(eq(users.id, userId));
 
-  return Response.json({ sessionId: session.id });
+  return Response.json({ sessionId: session.id, url: session.url });
 };
 
 export const config: Config = {
