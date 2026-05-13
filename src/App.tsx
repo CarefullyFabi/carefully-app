@@ -9,10 +9,8 @@ export default function App() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const user = useUser();
 
-  const handleUpgrade = async () => {
-    setCheckoutLoading(true);
-    await user.startCheckout();
-    setCheckoutLoading(false);
+  const handleUpgrade = () => {
+    user.startCheckout();
   };
 
   return (
