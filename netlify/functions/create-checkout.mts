@@ -75,7 +75,7 @@ export default async (req: Request, context: Context) => {
     .set({ stripeSessionId: session.id, updatedAt: new Date() })
     .where(eq(users.id, userId));
 
-  return Response.json({ url: session.url });
+  return Response.json({ sessionId: session.id });
 };
 
 export const config: Config = {
