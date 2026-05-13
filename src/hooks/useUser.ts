@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const USER_ID_KEY = 'carefully_user_id';
 const FREE_MESSAGE_LIMIT = 20;
@@ -126,8 +129,11 @@ export function useUser() {
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
+        if (data.sessionId) {
+          const stripe = await stripePromise;
+          if (stripe) {
+            await stripe.redirectToCheckout({ sessionId: data.sessionId });
+          }
         }
       }
     } catch {}
