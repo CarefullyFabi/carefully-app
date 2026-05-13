@@ -21,6 +21,11 @@ interface Message {
 
 interface ChatInterfaceProps {
   currentMood: string | null;
+  isPremium: boolean;
+  limitReached: boolean;
+  remainingMessages: number;
+  trackMessage: () => Promise<boolean>;
+  onShowPaywall: () => void;
 }
 
 const WELCOME_MESSAGE: Message = {
@@ -43,7 +48,7 @@ const moodMessages: Record<Mood, string> = {
   'good': 'Mir geht es heute gut!',
 };
 
-export function ChatInterface({ currentMood }: ChatInterfaceProps) {
+export function ChatInterface({ currentMood, isPremium, limitReached, remainingMessages, trackMessage, onShowPaywall }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -69,6 +74,17 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
   const handleSend = async (directMessage?: string) => {
     const trimmed = directMessage || input.trim();
     if (!trimmed || isTyping) return;
+
+    if (limitReached) {
+      onShowPaywall();
+      return;
+    }
+
+    const allowed = await trackMessage();
+    if (!allowed) {
+      onShowPaywall();
+      return;
+    }
 
     if (!directMessage) setInput('');
 
@@ -271,7 +287,25 @@ export function ChatInterface({ currentMood }: ChatInterfaceProps) {
       </div>
 
       <div className="shrink-0 pt-3 pb-[env(safe-area-inset-bottom)] chat-input-area">
-        <div className="flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60">
+        {limitReached && (
+          <div className="mb-2 text-center">
+            <button
+              onClick={onShowPaywall}
+              className="text-xs text-blue-600 font-medium hover:text-blue-700 transition-colors"
+            >
+              Nachrichtenlimit erreicht – Upgrade auf Premium ✨
+            </button>
+          </div>
+        )}
+        {!isPremium && !limitReached && remainingMessages <= 5 && remainingMessages > 0 && (
+          <p className="text-[0.5625rem] text-slate-400 text-center mb-1">
+            Noch {remainingMessages} {remainingMessages === 1 ? 'Nachricht' : 'Nachrichten'} verfügbar
+          </p>
+        )}
+        <div className={cn(
+          "flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60",
+          limitReached && "opacity-50 pointer-events-none"
+        )}>
           <textarea
             ref={inputRef}
             value={input}
