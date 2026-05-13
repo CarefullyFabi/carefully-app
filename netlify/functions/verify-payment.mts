@@ -37,7 +37,8 @@ export default async (req: Request, context: Context) => {
     return Response.json({ success: false, reason: "Payment not completed" });
   }
 
-  if (session.metadata?.userId !== userId) {
+  const sessionUserId = session.metadata?.userId || session.client_reference_id;
+  if (sessionUserId !== userId) {
     return Response.json({ success: false, reason: "User mismatch" });
   }
 
