@@ -43,10 +43,10 @@ export function PaywallModal({ visible, loading, onUpgrade, onClose }: PaywallMo
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 mb-6">
               <div className="flex items-baseline justify-center gap-1 mb-1">
                 <span className="text-3xl font-bold text-slate-800">4,99€</span>
-                <span className="text-sm text-slate-500">einmalig</span>
+                <span className="text-sm text-slate-500">/ Monat</span>
               </div>
               <p className="text-xs text-blue-600 font-medium">
-                Unbegrenzter Zugang – für immer
+                Unbegrenzter Zugang – jederzeit kündbar
               </p>
             </div>
 

@@ -26,19 +26,19 @@ export default function App() {
       <div className="relative z-10 max-w-5xl mx-auto w-full flex flex-col h-full overflow-hidden app-container">
         <header className="flex flex-col items-center mb-2 md:mb-4 shrink-0 app-header sticky top-0 z-20 bg-[#F8F9FA]/90 backdrop-blur-sm">
           <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-medium text-slate-800 tracking-tight italic font-serif leading-tight">
+            <h1 className="text-4xl md:text-5xl font-medium text-slate-800 tracking-tight italic font-serif leading-tight">
               Carefully
               {!user.loading && (
                 <span className={`ml-2 text-xs md:text-sm font-sans not-italic tracking-normal align-middle px-2 py-0.5 rounded-full ${
                   user.isPremium
                     ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 border border-amber-200'
-                    : 'bg-slate-100 text-slate-400 border border-slate-200'
+                    : 'bg-blue-50 text-blue-500 border border-blue-200'
                 }`}>
                   {user.isPremium ? 'Premium' : 'free'}
                 </span>
               )}
             </h1>
-            <p className="text-[0.5625rem] md:text-[0.625rem] text-blue-600 font-medium uppercase tracking-[0.15em] mt-0.5 leading-tight app-subtitle">Dein persönlicher Begleiter bei Ängsten, Depressionen, Psychosen</p>
+            <p className="text-[0.625rem] md:text-xs text-blue-600 font-medium uppercase tracking-[0.15em] mt-2 leading-tight app-subtitle">Dein einfühlsamer Begleiter für mentale Gesundheit</p>
           </div>
           <a href="tel:112" className="mt-2 bg-red-50 text-red-600 border border-red-100 px-3 py-1.5 rounded-full text-[0.625rem] font-bold uppercase tracking-wider hover:bg-red-100 transition-colors flex items-center gap-2 shadow-sm shrink-0 app-emergency">
             <span className="relative flex h-2 w-2">
