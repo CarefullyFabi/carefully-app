@@ -117,10 +117,20 @@ export function useUser() {
     return true;
   }, [state.userId, state.isPremium, state.limitReached]);
 
-  const startCheckout = useCallback(() => {
-    const url = new URL('https://buy.stripe.com/fZu7sE0vo29g8oseln18c01');
-    url.searchParams.set('client_reference_id', state.userId);
-    window.location.href = url.toString();
+  const startCheckout = useCallback(async () => {
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: state.userId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      }
+    } catch {}
   }, [state.userId]);
 
   return {
