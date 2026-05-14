@@ -65,6 +65,15 @@ export function ChatInterface({ currentMood, isPremium, limitReached, remainingM
   }, [messages, isTyping]);
 
   useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const timer = setTimeout(() => {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
       inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 120)}px`;
