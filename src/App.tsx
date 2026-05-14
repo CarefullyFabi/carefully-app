@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChatInterface } from './components/ChatInterface';
 import { PaywallModal } from './components/PaywallModal';
 import { useUser } from './hooks/useUser';
@@ -6,14 +6,7 @@ import { useUser } from './hooks/useUser';
 export default function App() {
   const [showImpressum, setShowImpressum] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const user = useUser();
-
-  useEffect(() => {
-    if (!user.loading && user.limitReached && !user.isPremium) {
-      setShowPaywall(true);
-    }
-  }, [user.loading, user.limitReached, user.isPremium]);
 
   const handleUpgrade = () => {
     user.startCheckout();
@@ -56,10 +49,12 @@ export default function App() {
         <main className="flex-1 flex flex-col overflow-hidden min-h-0">
           <ChatInterface
             currentMood={null}
+            userId={user.userId}
             isPremium={user.isPremium}
             limitReached={user.limitReached}
             remainingMessages={user.remainingMessages}
-            trackMessage={user.trackMessage}
+            onLimitReached={(messageCount) => user.updateMessageState(messageCount, true)}
+            onMessageSent={(messageCount, limitReached) => user.updateMessageState(messageCount, limitReached)}
             onShowPaywall={() => setShowPaywall(true)}
           />
         </main>
@@ -109,7 +104,7 @@ export default function App() {
 
       <PaywallModal
         visible={showPaywall}
-        loading={checkoutLoading}
+        loading={false}
         onUpgrade={handleUpgrade}
         onClose={() => setShowPaywall(false)}
       />

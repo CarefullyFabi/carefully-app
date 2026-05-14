@@ -3,14 +3,10 @@ import { useState, useEffect, useCallback } from 'react';
 const USER_ID_KEY = 'carefully_user_id';
 const FREE_MESSAGE_LIMIT = 20;
 
-function generateId(): string {
-  return crypto.randomUUID();
-}
-
 function getUserId(): string {
   let id = localStorage.getItem(USER_ID_KEY);
   if (!id) {
-    id = generateId();
+    id = crypto.randomUUID();
     localStorage.setItem(USER_ID_KEY, id);
   }
   return id;
@@ -93,29 +89,12 @@ export function useUser() {
     } catch {}
   };
 
-  const trackMessage = useCallback(async (): Promise<boolean> => {
-    if (state.isPremium) return true;
-    if (state.limitReached) return false;
-
-    try {
-      const res = await fetch('/api/user-message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: state.userId }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setState((s) => ({
-          ...s,
-          messageCount: data.messageCount,
-          isPremium: data.isPremium,
-          limitReached: data.limitReached,
-        }));
-        return data.allowed;
-      }
-    } catch {}
-    return true;
-  }, [state.userId, state.isPremium, state.limitReached]);
+  const updateMessageState = useCallback(
+    (messageCount: number, limitReached: boolean) => {
+      setState((s) => ({ ...s, messageCount, limitReached }));
+    },
+    [],
+  );
 
   const startCheckout = useCallback(() => {
     window.location.href = 'https://buy.stripe.com/fZu7sE0vo29g8oseln18c01';
@@ -123,7 +102,7 @@ export function useUser() {
 
   return {
     ...state,
-    trackMessage,
+    updateMessageState,
     startCheckout,
     remainingMessages: state.isPremium
       ? Infinity
