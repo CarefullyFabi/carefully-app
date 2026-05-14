@@ -302,10 +302,7 @@ export function ChatInterface({ currentMood, isPremium, limitReached, remainingM
             Noch {remainingMessages} {remainingMessages === 1 ? 'Nachricht' : 'Nachrichten'} verfügbar
           </p>
         )}
-        <div className={cn(
-          "flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60",
-          limitReached && "opacity-50 pointer-events-none"
-        )}>
+        <div className="flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60">
           <textarea
             ref={inputRef}
             value={input}
