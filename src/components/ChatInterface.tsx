@@ -21,10 +21,12 @@ interface Message {
 
 interface ChatInterfaceProps {
   currentMood: string | null;
+  userId: string;
   isPremium: boolean;
   limitReached: boolean;
   remainingMessages: number;
-  trackMessage: () => Promise<boolean>;
+  onLimitReached: (messageCount: number) => void;
+  onMessageSent: (messageCount: number, limitReached: boolean) => void;
   onShowPaywall: () => void;
 }
 
@@ -48,7 +50,7 @@ const moodMessages: Record<Mood, string> = {
   'good': 'Mir geht es heute gut!',
 };
 
-export function ChatInterface({ currentMood, isPremium, limitReached, remainingMessages, trackMessage, onShowPaywall }: ChatInterfaceProps) {
+export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, onLimitReached, onMessageSent, onShowPaywall }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -80,23 +82,11 @@ export function ChatInterface({ currentMood, isPremium, limitReached, remainingM
     }
   }, [input]);
 
-  useEffect(() => {
-    if (limitReached) {
-      onShowPaywall();
-    }
-  }, [limitReached]);
-
   const handleSend = async (directMessage?: string) => {
     const trimmed = directMessage || input.trim();
     if (!trimmed || isTyping) return;
 
     if (limitReached) {
-      onShowPaywall();
-      return;
-    }
-
-    const allowed = await trackMessage();
-    if (!allowed) {
       onShowPaywall();
       return;
     }
@@ -121,12 +111,24 @@ export function ChatInterface({ currentMood, isPremium, limitReached, remainingM
           text: m.content,
         }));
 
-      const replyText = await geminiService.chat(history, trimmed);
+      const result = await geminiService.chat(userId, history, trimmed);
+
+      if (!result.ok && result.limitReached) {
+        onLimitReached(result.messageCount);
+        onShowPaywall();
+        return;
+      }
+
+      if (!result.ok) {
+        throw new Error('Chat failed');
+      }
+
+      onMessageSent(result.data.messageCount, result.data.limitReached);
 
       const reply: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: replyText,
+        content: result.data.text,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, reply]);

@@ -1,6 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import type { Config, Context } from "@netlify/functions";
+import { db } from "../../db/index.js";
+import { users } from "../../db/schema.js";
+import { eq, sql } from "drizzle-orm";
 
+const FREE_MESSAGE_LIMIT = 20;
 const ai = new GoogleGenAI({});
 
 interface ChatMessage {
@@ -13,17 +17,45 @@ export default async (req: Request, context: Context) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const { history, prompt } = (await req.json()) as {
+  const { userId, history, prompt } = (await req.json()) as {
+    userId: string;
     history: ChatMessage[];
     prompt: string;
   };
 
+  if (!userId || typeof userId !== "string") {
+    return Response.json({ error: "userId is required" }, { status: 400 });
+  }
+
   if (!prompt || typeof prompt !== "string") {
-    return new Response(JSON.stringify({ error: "Prompt is required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
+    return Response.json({ error: "Prompt is required" }, { status: 400 });
+  }
+
+  const existing = await db.select().from(users).where(eq(users.id, userId));
+  if (existing.length === 0) {
+    return Response.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const user = existing[0];
+
+  if (!user.isPremium && user.messageCount >= FREE_MESSAGE_LIMIT) {
+    return Response.json({
+      error: "limit_reached",
+      limitReached: true,
+      messageCount: user.messageCount,
+      remainingMessages: 0,
     });
   }
+
+  const [updated] = await db
+    .update(users)
+    .set({
+      messageCount: sql`${users.messageCount} + 1`,
+      ipAddress: context.ip,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId))
+    .returning();
 
   const contents = [
     ...history.map((msg) => ({
@@ -51,7 +83,16 @@ Kommunikationsregeln:
     },
   });
 
-  return Response.json({ text: response.text ?? "" });
+  const newCount = updated.messageCount;
+
+  return Response.json({
+    text: response.text ?? "",
+    messageCount: newCount,
+    remainingMessages: updated.isPremium
+      ? null
+      : Math.max(0, FREE_MESSAGE_LIMIT - newCount),
+    limitReached: !updated.isPremium && newCount >= FREE_MESSAGE_LIMIT,
+  });
 };
 
 export const config: Config = {

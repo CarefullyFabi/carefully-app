@@ -19,10 +19,18 @@ export default async (req: Request, context: Context) => {
     });
   }
 
+  const clientIp = context.ip;
+
   const existing = await db.select().from(users).where(eq(users.id, userId));
 
   if (existing.length > 0) {
     const user = existing[0];
+    if (clientIp && user.ipAddress !== clientIp) {
+      await db
+        .update(users)
+        .set({ ipAddress: clientIp, updatedAt: new Date() })
+        .where(eq(users.id, userId));
+    }
     return Response.json({
       userId: user.id,
       messageCount: user.messageCount,
@@ -31,16 +39,37 @@ export default async (req: Request, context: Context) => {
     });
   }
 
+  let inheritedCount = 0;
+  if (clientIp) {
+    const ipUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.ipAddress, clientIp));
+    const maxCount = ipUsers.reduce(
+      (max, u) => Math.max(max, u.messageCount),
+      0,
+    );
+    const anyPremium = ipUsers.some((u) => u.isPremium);
+    if (!anyPremium && maxCount > 0) {
+      inheritedCount = maxCount;
+    }
+  }
+
   const [newUser] = await db
     .insert(users)
-    .values({ id: userId })
+    .values({
+      id: userId,
+      messageCount: inheritedCount,
+      ipAddress: clientIp || null,
+    })
     .returning();
 
   return Response.json({
     userId: newUser.id,
     messageCount: newUser.messageCount,
     isPremium: newUser.isPremium,
-    limitReached: false,
+    limitReached:
+      !newUser.isPremium && newUser.messageCount >= FREE_MESSAGE_LIMIT,
   });
 };
 
