@@ -71,6 +71,12 @@ export function ChatInterface({ currentMood, isPremium, limitReached, remainingM
     }
   }, [input]);
 
+  useEffect(() => {
+    if (limitReached) {
+      onShowPaywall();
+    }
+  }, [limitReached]);
+
   const handleSend = async (directMessage?: string) => {
     const trimmed = directMessage || input.trim();
     if (!trimmed || isTyping) return;
@@ -297,31 +303,42 @@ export function ChatInterface({ currentMood, isPremium, limitReached, remainingM
             </button>
           </div>
         )}
-        {!isPremium && !limitReached && remainingMessages <= 5 && remainingMessages > 0 && (
+        {!isPremium && !limitReached && (
           <p className="text-[0.5625rem] text-slate-400 text-center mb-1">
-            Noch {remainingMessages} {remainingMessages === 1 ? 'Nachricht' : 'Nachrichten'} verfügbar
+            {20 - remainingMessages} von 20 Nachrichten verbraucht
           </p>
         )}
-        <div className="flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60">
+        <div
+          className="relative flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60"
+        >
+          {limitReached && (
+            <div
+              className="absolute inset-0 z-10 rounded-2xl cursor-pointer"
+              onClick={onShowPaywall}
+            />
+          )}
           <textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Schreib mir, was dich bewegt..."
+            placeholder={limitReached ? 'Nachrichtenlimit erreicht...' : 'Schreib mir, was dich bewegt...'}
             rows={1}
-            className="flex-1 bg-transparent text-base md:text-sm text-slate-700 placeholder:text-slate-400 resize-none outline-none py-1.5 leading-relaxed max-h-[7.5rem]"
+            disabled={limitReached}
+            className="flex-1 bg-transparent text-base md:text-sm text-slate-700 placeholder:text-slate-400 resize-none outline-none py-1.5 leading-relaxed max-h-[7.5rem] disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.92 }}
-            onClick={() => handleSend()}
-            disabled={!input.trim()}
+            whileHover={{ scale: limitReached ? 1 : 1.05 }}
+            whileTap={{ scale: limitReached ? 1 : 0.92 }}
+            onClick={() => limitReached ? onShowPaywall() : handleSend()}
+            disabled={!limitReached && !input.trim()}
             className={cn(
-              'shrink-0 flex items-center justify-center w-9 h-9 rounded-xl transition-colors',
-              input.trim()
-                ? 'bg-blue-600 text-white shadow-sm shadow-blue-200/50 hover:bg-blue-700'
-                : 'bg-slate-100 text-slate-300 cursor-not-allowed'
+              'shrink-0 flex items-center justify-center w-9 h-9 rounded-xl transition-colors relative z-20',
+              limitReached
+                ? 'bg-blue-600 text-white shadow-sm shadow-blue-200/50 hover:bg-blue-700 cursor-pointer'
+                : input.trim()
+                  ? 'bg-blue-600 text-white shadow-sm shadow-blue-200/50 hover:bg-blue-700'
+                  : 'bg-slate-100 text-slate-300 cursor-not-allowed'
             )}
           >
             <Send className="w-4 h-4" />

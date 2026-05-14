@@ -10,10 +10,10 @@ export default function App() {
   const user = useUser();
 
   useEffect(() => {
-    if (user.limitReached && !user.isPremium) {
+    if (!user.loading && user.limitReached && !user.isPremium) {
       setShowPaywall(true);
     }
-  }, [user.limitReached, user.isPremium]);
+  }, [user.loading, user.limitReached, user.isPremium]);
 
   const handleUpgrade = () => {
     user.startCheckout();
@@ -64,13 +64,6 @@ export default function App() {
           />
         </main>
 
-        <PaywallModal
-          visible={showPaywall}
-          loading={checkoutLoading}
-          onUpgrade={handleUpgrade}
-          onClose={() => setShowPaywall(false)}
-        />
-
         <footer className="shrink-0 flex flex-col justify-center items-center py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] border-t border-slate-200/50 gap-0.5 app-footer">
           <p className="text-[0.625rem] text-slate-400 font-medium tracking-wider">
             © ❤️ mit Liebe gemacht von{' '}
@@ -113,6 +106,13 @@ export default function App() {
           </div>
         )}
       </div>
+
+      <PaywallModal
+        visible={showPaywall}
+        loading={checkoutLoading}
+        onUpgrade={handleUpgrade}
+        onClose={() => setShowPaywall(false)}
+      />
     </div>
   );
 }
