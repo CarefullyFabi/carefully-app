@@ -96,14 +96,43 @@ export function useUser() {
     [],
   );
 
-  const startCheckout = useCallback(() => {
-    window.location.href = 'https://buy.stripe.com/fZu7sE0vo29g8oseln18c01';
+  const startCheckout = useCallback(async () => {
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: getUserId() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      }
+    } catch {}
+  }, []);
+
+  const manageSubscription = useCallback(async () => {
+    try {
+      const res = await fetch('/api/create-portal-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: getUserId() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      }
+    } catch {}
   }, []);
 
   return {
     ...state,
     updateMessageState,
     startCheckout,
+    manageSubscription,
     remainingMessages: state.isPremium
       ? Infinity
       : Math.max(0, FREE_MESSAGE_LIMIT - state.messageCount),

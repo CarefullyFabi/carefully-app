@@ -35,6 +35,14 @@ export default function App() {
                 </span>
               )}
             </h1>
+            {user.isPremium && (
+              <button
+                onClick={() => user.manageSubscription()}
+                className="mt-1 text-[0.625rem] text-slate-400 hover:text-slate-600 transition-colors underline underline-offset-2 font-medium"
+              >
+                Abo kündigen
+              </button>
+            )}
             <p className="text-[0.625rem] md:text-xs text-blue-600 font-medium uppercase tracking-[0.15em] mt-2 leading-tight app-subtitle">Begleitung bei Ängsten, Depressionen, Psychosen</p>
           </div>
           <a href="tel:112" className="mt-2 bg-red-50 text-red-600 border border-red-100 px-3 py-1.5 rounded-full text-[0.625rem] font-bold uppercase tracking-wider hover:bg-red-100 transition-colors flex items-center gap-2 shadow-sm shrink-0 app-emergency">

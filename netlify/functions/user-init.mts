@@ -40,18 +40,27 @@ export default async (req: Request, context: Context) => {
   }
 
   let inheritedCount = 0;
+  let inheritedPremium = false;
+  let inheritedStripeSessionId: string | null = null;
+
   if (clientIp) {
     const ipUsers = await db
       .select()
       .from(users)
       .where(eq(users.ipAddress, clientIp));
+
     const maxCount = ipUsers.reduce(
       (max, u) => Math.max(max, u.messageCount),
       0,
     );
-    const anyPremium = ipUsers.some((u) => u.isPremium);
-    if (!anyPremium && maxCount > 0) {
+    if (maxCount > 0) {
       inheritedCount = maxCount;
+    }
+
+    const premiumUser = ipUsers.find((u) => u.isPremium);
+    if (premiumUser) {
+      inheritedPremium = true;
+      inheritedStripeSessionId = premiumUser.stripeSessionId;
     }
   }
 
@@ -60,6 +69,8 @@ export default async (req: Request, context: Context) => {
     .values({
       id: userId,
       messageCount: inheritedCount,
+      isPremium: inheritedPremium,
+      stripeSessionId: inheritedStripeSessionId,
       ipAddress: clientIp || null,
     })
     .returning();
