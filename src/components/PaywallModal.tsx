@@ -4,11 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface PaywallModalProps {
   visible: boolean;
   loading: boolean;
+  error: string | null;
   onUpgrade: () => void;
   onClose: () => void;
 }
 
-export function PaywallModal({ visible, loading, onUpgrade, onClose }: PaywallModalProps) {
+export function PaywallModal({ visible, loading, error, onUpgrade, onClose }: PaywallModalProps) {
   return (
     <AnimatePresence>
       {visible && (
@@ -51,6 +52,12 @@ export function PaywallModal({ visible, loading, onUpgrade, onClose }: PaywallMo
                   Unbegrenzter Zugang – jederzeit kündbar
                 </p>
               </div>
+
+              {error && (
+                <p className="text-xs text-red-600 mb-3 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                  {error}
+                </p>
+              )}
 
               <button
                 onClick={onUpgrade}

@@ -18,6 +18,8 @@ interface UserState {
   isPremium: boolean;
   limitReached: boolean;
   loading: boolean;
+  checkoutLoading: boolean;
+  checkoutError: string | null;
 }
 
 export function useUser() {
@@ -27,6 +29,8 @@ export function useUser() {
     isPremium: false,
     limitReached: false,
     loading: true,
+    checkoutLoading: false,
+    checkoutError: null,
   });
 
   const initUser = useCallback(async () => {
@@ -39,13 +43,14 @@ export function useUser() {
       });
       if (res.ok) {
         const data = await res.json();
-        setState({
+        setState((s) => ({
+          ...s,
           userId: data.userId,
           messageCount: data.messageCount,
           isPremium: data.isPremium,
           limitReached: data.limitReached,
           loading: false,
-        });
+        }));
       } else {
         setState((s) => ({ ...s, userId, loading: false }));
       }
@@ -97,6 +102,7 @@ export function useUser() {
   );
 
   const startCheckout = useCallback(async () => {
+    setState((s) => ({ ...s, checkoutLoading: true, checkoutError: null }));
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
@@ -107,9 +113,21 @@ export function useUser() {
         const data = await res.json();
         if (data.url) {
           window.location.href = data.url;
+          return;
         }
       }
-    } catch {}
+      setState((s) => ({
+        ...s,
+        checkoutLoading: false,
+        checkoutError: 'Checkout konnte nicht gestartet werden. Bitte versuche es erneut.',
+      }));
+    } catch {
+      setState((s) => ({
+        ...s,
+        checkoutLoading: false,
+        checkoutError: 'Verbindungsfehler. Bitte prüfe deine Internetverbindung und versuche es erneut.',
+      }));
+    }
   }, []);
 
   const manageSubscription = useCallback(async () => {
