@@ -9,7 +9,7 @@ export default function App() {
   const user = useUser();
 
   const handleUpgrade = () => {
-    user.startCheckout();
+    window.open('https://buy.stripe.com/fZu7sE0vo29g8oseln18c01', '_blank');
   };
 
   return (
