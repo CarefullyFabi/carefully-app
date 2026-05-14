@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChatInterface } from './components/ChatInterface';
 import { PaywallModal } from './components/PaywallModal';
 import { useUser } from './hooks/useUser';
@@ -8,6 +8,12 @@ export default function App() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const user = useUser();
+
+  useEffect(() => {
+    if (user.limitReached && !user.isPremium) {
+      setShowPaywall(true);
+    }
+  }, [user.limitReached, user.isPremium]);
 
   const handleUpgrade = () => {
     user.startCheckout();
