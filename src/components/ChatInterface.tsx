@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { geminiService, type Message as GeminiMessage } from '../services/gemini';
+import { PayPalCheckout } from './PayPalCheckout';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -28,6 +29,7 @@ interface ChatInterfaceProps {
   purchasedMessages: number;
   onLimitReached: (messageCount: number) => void;
   onMessageSent: (messageCount: number, limitReached: boolean) => void;
+  onPaymentSuccess: () => void;
 }
 
 const WELCOME_MESSAGE: Message = {
@@ -50,7 +52,7 @@ const moodMessages: Record<Mood, string> = {
   'good': 'Mir geht es heute gut!',
 };
 
-export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent }: ChatInterfaceProps) {
+export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent, onPaymentSuccess }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -87,7 +89,6 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
     if (!trimmed || isTyping) return;
 
     if (limitReached) {
-      window.open('https://www.paypal.com/ncp/payment/D527D9A8HQ5E8', '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -115,7 +116,6 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
 
       if (!result.ok && result.limitReached) {
         onLimitReached(result.messageCount);
-        window.open('https://www.paypal.com/ncp/payment/D527D9A8HQ5E8', '_blank', 'noopener,noreferrer');
         return;
       }
 
@@ -328,14 +328,6 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
         <div
           className="relative flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60"
         >
-          {limitReached && (
-            <a
-              href="https://www.paypal.com/ncp/payment/D527D9A8HQ5E8"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute inset-0 z-10 rounded-2xl cursor-pointer"
-            />
-          )}
           <textarea
             ref={inputRef}
             value={input}
@@ -349,15 +341,13 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
           <motion.button
             whileHover={{ scale: limitReached ? 1 : 1.05 }}
             whileTap={{ scale: limitReached ? 1 : 0.92 }}
-            onClick={() => limitReached ? window.open('https://www.paypal.com/ncp/payment/D527D9A8HQ5E8', '_blank', 'noopener,noreferrer') : handleSend()}
-            disabled={!limitReached && !input.trim()}
+            onClick={() => handleSend()}
+            disabled={limitReached || !input.trim()}
             className={cn(
               'shrink-0 flex items-center justify-center w-9 h-9 rounded-xl transition-colors relative z-20',
-              limitReached
-                ? 'bg-blue-600 text-white shadow-sm shadow-blue-200/50 hover:bg-blue-700 cursor-pointer'
-                : input.trim()
-                  ? 'bg-blue-600 text-white shadow-sm shadow-blue-200/50 hover:bg-blue-700'
-                  : 'bg-slate-100 text-slate-300 cursor-not-allowed'
+              !limitReached && input.trim()
+                ? 'bg-blue-600 text-white shadow-sm shadow-blue-200/50 hover:bg-blue-700'
+                : 'bg-slate-100 text-slate-300 cursor-not-allowed'
             )}
           >
             <Send className="w-4 h-4" />
