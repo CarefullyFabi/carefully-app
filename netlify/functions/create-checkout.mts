@@ -71,6 +71,7 @@ export default async (req: Request, context: Context) => {
         mode: "subscription",
         success_url: `${siteUrl}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${siteUrl}?payment_cancelled=true`,
+        client_reference_id: userId,
         subscription_data: {
           metadata: {
             userId,
