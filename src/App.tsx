@@ -124,8 +124,8 @@ export default function App() {
 
       <PaywallModal
         visible={showPaywall}
-        loading={false}
-        error={null}
+        loading={user.checkoutLoading}
+        error={user.checkoutError}
         onUpgrade={handleUpgrade}
         onClose={handleClosePaywall}
       />
