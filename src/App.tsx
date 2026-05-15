@@ -6,10 +6,13 @@ import { useUser } from './hooks/useUser';
 export default function App() {
   const [showImpressum, setShowImpressum] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const user = useUser();
 
-  const handleUpgrade = () => {
-    window.open('https://buy.stripe.com/fZu7sE0vo29g8oseln18c01', '_blank');
+  const handleUpgrade = async () => {
+    setCheckoutLoading(true);
+    await user.startCheckout();
+    setCheckoutLoading(false);
   };
 
   return (
@@ -119,7 +122,7 @@ export default function App() {
 
       <PaywallModal
         visible={showPaywall}
-        loading={false}
+        loading={checkoutLoading}
         onUpgrade={handleUpgrade}
         onClose={() => setShowPaywall(false)}
       />
