@@ -45,7 +45,7 @@ export function PayPalCheckout({ userId, onSuccess, onError }: PayPalCheckoutPro
     <PayPalScriptProvider
       options={{
         clientId,
-        currency: 'USD',
+        currency: 'EUR',
         intent: 'capture',
         components: 'buttons',
         'enable-funding': 'venmo,paylater,card',
@@ -58,7 +58,7 @@ export function PayPalCheckout({ userId, onSuccess, onError }: PayPalCheckoutPro
           color: 'white',
           label: 'checkout',
         }}
-        message={{ amount: 100 }}
+        message={{ amount: 3.99 }}
         createOrder={async () => {
           try {
             const response = await fetch('/api/orders', {
@@ -97,6 +97,7 @@ export function PayPalCheckout({ userId, onSuccess, onError }: PayPalCheckoutPro
               {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId }),
               },
             );
 

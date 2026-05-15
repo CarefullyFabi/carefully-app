@@ -38,7 +38,9 @@ export default async (req: Request, context: Context) => {
 
   const user = existing[0];
 
-  if (!user.isPremium && user.messageCount >= FREE_MESSAGE_LIMIT) {
+  const effectiveLimit = FREE_MESSAGE_LIMIT + (user.purchasedMessages ?? 0);
+
+  if (!user.isPremium && user.messageCount >= effectiveLimit) {
     return Response.json({
       error: "limit_reached",
       limitReached: true,
@@ -85,13 +87,15 @@ Kommunikationsregeln:
 
   const newCount = updated.messageCount;
 
+  const updatedLimit = FREE_MESSAGE_LIMIT + (updated.purchasedMessages ?? 0);
+
   return Response.json({
     text: response.text ?? "",
     messageCount: newCount,
     remainingMessages: updated.isPremium
       ? null
-      : Math.max(0, FREE_MESSAGE_LIMIT - newCount),
-    limitReached: !updated.isPremium && newCount >= FREE_MESSAGE_LIMIT,
+      : Math.max(0, updatedLimit - newCount),
+    limitReached: !updated.isPremium && newCount >= updatedLimit,
   });
 };
 

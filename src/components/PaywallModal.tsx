@@ -36,22 +36,22 @@ export function PaywallModal({ visible, userId, onPaymentSuccess, onClose }: Pay
                 <span className="text-2xl">✨</span>
               </div>
               <h2 className="text-xl font-semibold text-slate-800 mb-2">
-                Carefully Premium
+                Weitere Nachrichten kaufen
               </h2>
               <p className="text-sm text-slate-500 mb-1">
-                Du hast dein Limit von 20 Nachrichten erreicht.
+                Du hast dein Limit erreicht.
               </p>
               <p className="text-sm text-slate-500 mb-6">
-                Schalte unbegrenzten Zugang frei, um weiterhin mit Carefully zu sprechen.
+                Kaufe Dir weitere 50 Nachrichten, um weiterhin mit Carefully zu sprechen.
               </p>
 
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 mb-6">
                 <div className="flex items-baseline justify-center gap-1 mb-1">
-                  <span className="text-3xl font-bold text-slate-800">4,99€</span>
-                  <span className="text-sm text-slate-500">/ Monat</span>
+                  <span className="text-3xl font-bold text-slate-800">3,99€</span>
+                  <span className="text-sm text-slate-500">einmalig</span>
                 </div>
                 <p className="text-xs text-blue-600 font-medium">
-                  Unbegrenzter Zugang – jederzeit kündbar
+                  50 zusätzliche Nachrichten
                 </p>
               </div>
 
