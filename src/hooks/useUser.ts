@@ -65,12 +65,15 @@ export function useUser() {
     const params = new URLSearchParams(window.location.search);
     const paymentSuccess = params.get('payment_success');
     const sessionId = params.get('session_id');
+    const paymentCancelled = params.get('payment_cancelled');
 
     if (paymentSuccess === 'true' && sessionId && state.userId) {
-      verifyPayment(state.userId, sessionId);
+      verifyPayment(state.userId, sessionId).then(() => initUser());
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (paymentCancelled === 'true') {
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [state.userId]);
+  }, [state.userId, initUser]);
 
   const verifyPayment = async (userId: string, sessionId: string) => {
     try {
@@ -89,7 +92,9 @@ export function useUser() {
           }));
         }
       }
-    } catch {}
+    } catch (err) {
+      console.error('Payment verification failed:', err);
+    }
   };
 
   const updateMessageState = useCallback(
@@ -99,10 +104,28 @@ export function useUser() {
     [],
   );
 
-  const startCheckout = useCallback(() => {
-    const paymentUrl = new URL('https://buy.stripe.com/fZu7sE0vo29g8oseln18c01');
-    paymentUrl.searchParams.set('client_reference_id', getUserId());
-    window.location.href = paymentUrl.toString();
+  const startCheckout = useCallback(async () => {
+    const userId = getUserId();
+    setState((s) => ({ ...s, checkoutError: null }));
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          setState((s) => ({ ...s, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
+        }
+      } else {
+        setState((s) => ({ ...s, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
+      }
+    } catch {
+      setState((s) => ({ ...s, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
+    }
   }, []);
 
   const manageSubscription = useCallback(async () => {
