@@ -76,6 +76,13 @@ export default function App() {
             >
               Fabian Matthey
             </button>
+            {' | '}
+            <button
+              onClick={() => window.open('/datenschutz.html', '_blank', 'width=800,height=600,scrollbars=yes')}
+              className="underline hover:text-slate-600 transition-colors cursor-pointer"
+            >
+              Datenschutz
+            </button>
           </p>
           <p className="text-[0.625rem] text-slate-400 font-medium tracking-wider">
             Für Sunny.
