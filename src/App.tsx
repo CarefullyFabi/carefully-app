@@ -6,13 +6,10 @@ import { useUser } from './hooks/useUser';
 export default function App() {
   const [showImpressum, setShowImpressum] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const user = useUser();
 
-  const handleUpgrade = async () => {
-    setCheckoutLoading(true);
-    await user.startCheckout();
-    setCheckoutLoading(false);
+  const handleUpgrade = () => {
+    user.startCheckout();
   };
 
   const handleClosePaywall = () => {
@@ -127,8 +124,8 @@ export default function App() {
 
       <PaywallModal
         visible={showPaywall}
-        loading={checkoutLoading}
-        error={user.checkoutError}
+        loading={false}
+        error={null}
         onUpgrade={handleUpgrade}
         onClose={handleClosePaywall}
       />

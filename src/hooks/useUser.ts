@@ -99,29 +99,10 @@ export function useUser() {
     [],
   );
 
-  const startCheckout = useCallback(async () => {
-    setState((s) => ({ ...s, checkoutError: null }));
-    try {
-      const res = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: getUserId() }),
-      });
-      const data = await res.json().catch(() => null);
-      if (res.ok && data?.url) {
-        window.location.href = data.url;
-        return;
-      }
-      setState((s) => ({
-        ...s,
-        checkoutError: data?.error || 'Zahlung konnte nicht gestartet werden. Bitte versuche es später erneut.',
-      }));
-    } catch {
-      setState((s) => ({
-        ...s,
-        checkoutError: 'Verbindungsfehler. Bitte überprüfe deine Internetverbindung und versuche es erneut.',
-      }));
-    }
+  const startCheckout = useCallback(() => {
+    const paymentUrl = new URL('https://buy.stripe.com/fZu7sE0vo29g8oseln18c01');
+    paymentUrl.searchParams.set('client_reference_id', getUserId());
+    window.location.href = paymentUrl.toString();
   }, []);
 
   const manageSubscription = useCallback(async () => {
