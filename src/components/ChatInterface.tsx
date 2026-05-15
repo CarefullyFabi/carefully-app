@@ -28,7 +28,6 @@ interface ChatInterfaceProps {
   purchasedMessages: number;
   onLimitReached: (messageCount: number) => void;
   onMessageSent: (messageCount: number, limitReached: boolean) => void;
-  onShowPaywall: () => void;
 }
 
 const WELCOME_MESSAGE: Message = {
@@ -51,7 +50,7 @@ const moodMessages: Record<Mood, string> = {
   'good': 'Mir geht es heute gut!',
 };
 
-export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent, onShowPaywall }: ChatInterfaceProps) {
+export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -88,7 +87,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
     if (!trimmed || isTyping) return;
 
     if (limitReached) {
-      onShowPaywall();
+      window.open('https://www.paypal.com/ncp/payment/D527D9A8HQ5E8', '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -116,7 +115,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
 
       if (!result.ok && result.limitReached) {
         onLimitReached(result.messageCount);
-        onShowPaywall();
+        window.open('https://www.paypal.com/ncp/payment/D527D9A8HQ5E8', '_blank', 'noopener,noreferrer');
         return;
       }
 
@@ -310,12 +309,14 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
             <p className="text-xs text-slate-500 mb-2">
               Sie haben Ihre Anzahl von 20 kostenlosen Nachrichten verbraucht. Laden Sie Ihr Konto auf, um weiterhin mit Carefully zu sprechen.
             </p>
-            <button
-              onClick={onShowPaywall}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full shadow-sm shadow-blue-200/50 hover:bg-blue-700 active:scale-95 transition-all"
+            <a
+              href="https://www.paypal.com/ncp/payment/D527D9A8HQ5E8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full shadow-sm shadow-blue-200/50 hover:bg-blue-700 active:scale-95 transition-all no-underline"
             >
               Hier kaufen
-            </button>
+            </a>
           </div>
         )}
         {!isPremium && !limitReached && (
@@ -327,9 +328,11 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
           className="relative flex items-end gap-2 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl px-3 py-2 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-blue-200/60"
         >
           {limitReached && (
-            <div
+            <a
+              href="https://www.paypal.com/ncp/payment/D527D9A8HQ5E8"
+              target="_blank"
+              rel="noopener noreferrer"
               className="absolute inset-0 z-10 rounded-2xl cursor-pointer"
-              onClick={onShowPaywall}
             />
           )}
           <textarea
@@ -345,7 +348,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
           <motion.button
             whileHover={{ scale: limitReached ? 1 : 1.05 }}
             whileTap={{ scale: limitReached ? 1 : 0.92 }}
-            onClick={() => limitReached ? onShowPaywall() : handleSend()}
+            onClick={() => limitReached ? window.open('https://www.paypal.com/ncp/payment/D527D9A8HQ5E8', '_blank', 'noopener,noreferrer') : handleSend()}
             disabled={!limitReached && !input.trim()}
             className={cn(
               'shrink-0 flex items-center justify-center w-9 h-9 rounded-xl transition-colors relative z-20',
