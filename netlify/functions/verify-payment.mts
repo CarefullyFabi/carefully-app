@@ -31,7 +31,16 @@ export default async (req: Request, context: Context) => {
 
   const stripe = new Stripe(secretKey);
 
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.retrieve(sessionId);
+  } catch (err) {
+    console.error("Stripe session retrieval failed:", err);
+    return Response.json(
+      { success: false, reason: "Zahlung konnte nicht verifiziert werden." },
+      { status: 502 },
+    );
+  }
 
   if (session.payment_status !== "paid") {
     return Response.json({ success: false, reason: "Payment not completed" });

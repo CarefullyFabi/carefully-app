@@ -15,6 +15,11 @@ export default function App() {
     setCheckoutLoading(false);
   };
 
+  const handleClosePaywall = () => {
+    setShowPaywall(false);
+    user.clearCheckoutError();
+  };
+
   return (
     <div className="h-full bg-[#F8F9FA] text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden flex flex-col">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -123,8 +128,9 @@ export default function App() {
       <PaywallModal
         visible={showPaywall}
         loading={checkoutLoading}
+        error={user.checkoutError}
         onUpgrade={handleUpgrade}
-        onClose={() => setShowPaywall(false)}
+        onClose={handleClosePaywall}
       />
     </div>
   );
