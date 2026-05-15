@@ -1,2 +1,1 @@
 [build.environment]
-  VITE_STRIPE_PUBLISHABLE_KEY = "pk_live_51TwDAY4p5zhCqODDst150FEb6TEccBo4arzwYEEoy1S1TgciraJPlnkKABTmJGxbCosT2OEzZdUuMpmiuc55qppD00PINrLXDL"

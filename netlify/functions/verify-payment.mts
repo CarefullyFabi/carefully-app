@@ -1,5 +1,5 @@
 import type { Config, Context } from "@netlify/functions";
-import Stripe from "stripe";
+import { getSubscriptionDetails } from "../../lib/paypal.js";
 import { db } from "../../db/index.js";
 import { users } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
@@ -9,45 +9,45 @@ export default async (req: Request, context: Context) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const secretKey = Netlify.env.get("STRIPE_SECRET_KEY");
-  if (!secretKey) {
-    return new Response(
-      JSON.stringify({ error: "Stripe is not configured" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+  const clientId = Netlify.env.get("PAYPAL_CLIENT_ID");
+  if (!clientId) {
+    return Response.json(
+      { error: "PayPal is not configured" },
+      { status: 500 },
     );
   }
 
-  const { userId, sessionId } = (await req.json()) as {
+  const { userId, subscriptionId } = (await req.json()) as {
     userId: string;
-    sessionId: string;
+    subscriptionId: string;
   };
 
-  if (!userId || !sessionId) {
-    return new Response(
-      JSON.stringify({ error: "userId and sessionId are required" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
+  if (!userId || !subscriptionId) {
+    return Response.json(
+      { error: "userId and subscriptionId are required" },
+      { status: 400 },
     );
   }
 
-  const stripe = new Stripe(secretKey);
-
-  let session: Stripe.Checkout.Session;
+  let details: { status: string; customId?: string };
   try {
-    session = await stripe.checkout.sessions.retrieve(sessionId);
+    details = await getSubscriptionDetails(subscriptionId);
   } catch (err) {
-    console.error("Stripe session retrieval failed:", err);
+    console.error("PayPal subscription retrieval failed:", err);
     return Response.json(
       { success: false, reason: "Zahlung konnte nicht verifiziert werden." },
       { status: 502 },
     );
   }
 
-  if (session.payment_status !== "paid") {
-    return Response.json({ success: false, reason: "Payment not completed" });
+  if (details.status !== "ACTIVE") {
+    return Response.json({
+      success: false,
+      reason: "Subscription not active",
+    });
   }
 
-  const sessionUserId = session.metadata?.userId || session.client_reference_id;
-  if (sessionUserId !== userId) {
+  if (details.customId && details.customId !== userId) {
     return Response.json({ success: false, reason: "User mismatch" });
   }
 
@@ -55,7 +55,7 @@ export default async (req: Request, context: Context) => {
     .update(users)
     .set({
       isPremium: true,
-      stripeSessionId: sessionId,
+      paypalSubscriptionId: subscriptionId,
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId));

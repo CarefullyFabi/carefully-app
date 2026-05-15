@@ -66,24 +66,24 @@ export function useUser() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const paymentSuccess = params.get('payment_success');
-    const sessionId = params.get('session_id');
-    const paymentCancelled = params.get('payment_cancelled');
+    const paypalSuccess = params.get('paypal_success');
+    const subscriptionId = params.get('subscription_id');
+    const paypalCancelled = params.get('paypal_cancelled');
 
-    if (paymentSuccess === 'true' && sessionId && state.userId) {
-      verifyPayment(state.userId, sessionId).then(() => initUser());
+    if (paypalSuccess === 'true' && subscriptionId && state.userId) {
+      verifyPayment(state.userId, subscriptionId).then(() => initUser());
       window.history.replaceState({}, '', window.location.pathname);
-    } else if (paymentCancelled === 'true') {
+    } else if (paypalCancelled === 'true') {
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, [state.userId, initUser]);
 
-  const verifyPayment = async (userId: string, sessionId: string) => {
+  const verifyPayment = async (userId: string, subscriptionId: string) => {
     try {
       const res = await fetch('/api/verify-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, sessionId }),
+        body: JSON.stringify({ userId, subscriptionId }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -138,15 +138,15 @@ export function useUser() {
 
   const manageSubscription = useCallback(async () => {
     try {
-      const res = await fetch('/api/create-portal-session', {
+      const res = await fetch('/api/cancel-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: getUserId() }),
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
+        if (data.success) {
+          setState((s) => ({ ...s, isPremium: false }));
         }
       }
     } catch {}

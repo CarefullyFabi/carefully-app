@@ -68,7 +68,7 @@ export function PaywallModal({ visible, loading, error, onUpgrade, onClose }: Pa
               )}
 
               <p className="text-[0.625rem] text-slate-400 mt-3">
-                Sichere Zahlung über Stripe
+                Sichere Zahlung über PayPal
               </p>
           </motion.div>
         </motion.div>
