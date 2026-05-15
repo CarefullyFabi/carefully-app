@@ -43,14 +43,15 @@ export function useUser() {
       });
       if (res.ok) {
         const data = await res.json();
-        setState({
+        setState((s) => ({
+          ...s,
           userId: data.userId,
           messageCount: data.messageCount,
           isPremium: data.isPremium,
           limitReached: data.limitReached,
           loading: false,
           checkoutError: null,
-        });
+        }));
       } else {
         setState((s) => ({ ...s, userId, loading: false }));
       }
@@ -123,7 +124,12 @@ export function useUser() {
           setState((s) => ({ ...s, checkoutLoading: false, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
         }
       } else {
-        setState((s) => ({ ...s, checkoutLoading: false, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
+        let errorMsg = 'Checkout konnte nicht gestartet werden.';
+        try {
+          const errorData = await res.json();
+          if (errorData.error) errorMsg = errorData.error;
+        } catch { /* ignore parse error */ }
+        setState((s) => ({ ...s, checkoutLoading: false, checkoutError: errorMsg }));
       }
     } catch {
       setState((s) => ({ ...s, checkoutLoading: false, checkoutError: 'Checkout konnte nicht gestartet werden.' }));

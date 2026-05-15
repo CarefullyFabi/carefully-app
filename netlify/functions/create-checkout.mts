@@ -9,82 +9,102 @@ export default async (req: Request, context: Context) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const secretKey = Netlify.env.get("STRIPE_SECRET_KEY");
-  if (!secretKey) {
-    return new Response(
-      JSON.stringify({ error: "Stripe is not configured" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const { userId } = (await req.json()) as { userId: string };
-
-  if (!userId || typeof userId !== "string") {
-    return new Response(JSON.stringify({ error: "userId is required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const existing = await db.select().from(users).where(eq(users.id, userId));
-  if (existing.length === 0) {
-    return new Response(JSON.stringify({ error: "User not found" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const stripe = new Stripe(secretKey);
-
-  const siteUrl = Netlify.env.get("URL") || "http://localhost:8888";
-
-  let session: Stripe.Checkout.Session;
   try {
-    session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "eur",
-            product_data: {
-              name: "Carefully Premium",
-              description:
-                "Unbegrenzter Zugang zu Carefully – deinem persönlichen Begleiter",
+    const secretKey = Netlify.env.get("STRIPE_SECRET_KEY");
+    if (!secretKey) {
+      return Response.json(
+        { error: "Stripe ist nicht konfiguriert." },
+        { status: 500 },
+      );
+    }
+
+    let body: { userId?: string };
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json(
+        { error: "Ungültige Anfrage." },
+        { status: 400 },
+      );
+    }
+
+    const { userId } = body;
+    if (!userId || typeof userId !== "string") {
+      return Response.json(
+        { error: "userId is required" },
+        { status: 400 },
+      );
+    }
+
+    const existing = await db.select().from(users).where(eq(users.id, userId));
+    if (existing.length === 0) {
+      return Response.json(
+        { error: "Benutzer nicht gefunden." },
+        { status: 404 },
+      );
+    }
+
+    const stripe = new Stripe(secretKey);
+    const siteUrl = Netlify.env.get("URL") || "http://localhost:8888";
+
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "eur",
+              product_data: {
+                name: "Carefully Premium",
+                description:
+                  "Unbegrenzter Zugang zu Carefully – deinem persönlichen Begleiter",
+              },
+              unit_amount: 499,
+              recurring: {
+                interval: "month",
+              },
             },
-            unit_amount: 499,
-            recurring: {
-              interval: "month",
-            },
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        mode: "subscription",
+        success_url: `${siteUrl}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${siteUrl}?payment_cancelled=true`,
+        subscription_data: {
+          metadata: {
+            userId,
+          },
         },
-      ],
-      mode: "subscription",
-      success_url: `${siteUrl}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}?payment_cancelled=true`,
-      subscription_data: {
         metadata: {
           userId,
         },
-      },
-      metadata: {
-        userId,
-      },
-    });
+      });
+    } catch (err) {
+      console.error("Stripe checkout session creation failed:", err);
+      return Response.json(
+        { error: "Zahlung konnte nicht gestartet werden. Bitte versuche es später erneut." },
+        { status: 502 },
+      );
+    }
+
+    try {
+      await db
+        .update(users)
+        .set({ stripeSessionId: session.id, updatedAt: new Date() })
+        .where(eq(users.id, userId));
+    } catch (dbErr) {
+      console.error("Failed to update stripeSessionId:", dbErr);
+    }
+
+    return Response.json({ sessionId: session.id, url: session.url });
   } catch (err) {
-    console.error("Stripe checkout session creation failed:", err);
+    console.error("create-checkout unexpected error:", err);
     return Response.json(
-      { error: "Zahlung konnte nicht gestartet werden. Bitte versuche es später erneut." },
-      { status: 502 },
+      { error: "Ein unerwarteter Fehler ist aufgetreten." },
+      { status: 500 },
     );
   }
-
-  await db
-    .update(users)
-    .set({ stripeSessionId: session.id, updatedAt: new Date() })
-    .where(eq(users.id, userId));
-
-  return Response.json({ sessionId: session.id, url: session.url });
 };
 
 export const config: Config = {
