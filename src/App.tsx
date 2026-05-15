@@ -1,21 +1,10 @@
 import React, { useState } from 'react';
 import { ChatInterface } from './components/ChatInterface';
-import { PaywallModal } from './components/PaywallModal';
 import { useUser } from './hooks/useUser';
 
 export default function App() {
   const [showImpressum, setShowImpressum] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
   const user = useUser();
-
-  const handlePaymentSuccess = () => {
-    setShowPaywall(false);
-    user.refresh();
-  };
-
-  const handleClosePaywall = () => {
-    setShowPaywall(false);
-  };
 
   return (
     <div className="h-full bg-[#F8F9FA] text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden flex flex-col">
@@ -73,7 +62,6 @@ export default function App() {
             purchasedMessages={user.purchasedMessages}
             onLimitReached={(messageCount) => user.updateMessageState(messageCount, true)}
             onMessageSent={(messageCount, limitReached) => user.updateMessageState(messageCount, limitReached)}
-            onShowPaywall={() => setShowPaywall(true)}
           />
         </main>
 
@@ -127,12 +115,6 @@ export default function App() {
         )}
       </div>
 
-      <PaywallModal
-        visible={showPaywall}
-        userId={user.userId}
-        onPaymentSuccess={handlePaymentSuccess}
-        onClose={handleClosePaywall}
-      />
     </div>
   );
 }
