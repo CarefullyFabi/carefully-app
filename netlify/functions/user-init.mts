@@ -31,17 +31,20 @@ export default async (req: Request, context: Context) => {
         .set({ ipAddress: clientIp, updatedAt: new Date() })
         .where(eq(users.id, userId));
     }
+    const effectiveLimit = FREE_MESSAGE_LIMIT + (user.purchasedMessages ?? 0);
     return Response.json({
       userId: user.id,
       messageCount: user.messageCount,
       isPremium: user.isPremium,
-      limitReached: !user.isPremium && user.messageCount >= FREE_MESSAGE_LIMIT,
+      purchasedMessages: user.purchasedMessages ?? 0,
+      limitReached: !user.isPremium && user.messageCount >= effectiveLimit,
     });
   }
 
   let inheritedCount = 0;
   let inheritedPremium = false;
   let inheritedPaypalSubscriptionId: string | null = null;
+  let inheritedPurchasedMessages = 0;
 
   if (clientIp) {
     const ipUsers = await db
@@ -57,6 +60,14 @@ export default async (req: Request, context: Context) => {
       inheritedCount = maxCount;
     }
 
+    const maxPurchased = ipUsers.reduce(
+      (max, u) => Math.max(max, u.purchasedMessages ?? 0),
+      0,
+    );
+    if (maxPurchased > 0) {
+      inheritedPurchasedMessages = maxPurchased;
+    }
+
     const premiumUser = ipUsers.find((u) => u.isPremium);
     if (premiumUser) {
       inheritedPremium = true;
@@ -69,18 +80,21 @@ export default async (req: Request, context: Context) => {
     .values({
       id: userId,
       messageCount: inheritedCount,
+      purchasedMessages: inheritedPurchasedMessages,
       isPremium: inheritedPremium,
       paypalSubscriptionId: inheritedPaypalSubscriptionId,
       ipAddress: clientIp || null,
     })
     .returning();
 
+  const newEffectiveLimit = FREE_MESSAGE_LIMIT + (newUser.purchasedMessages ?? 0);
   return Response.json({
     userId: newUser.id,
     messageCount: newUser.messageCount,
     isPremium: newUser.isPremium,
+    purchasedMessages: newUser.purchasedMessages ?? 0,
     limitReached:
-      !newUser.isPremium && newUser.messageCount >= FREE_MESSAGE_LIMIT,
+      !newUser.isPremium && newUser.messageCount >= newEffectiveLimit,
   });
 };
 

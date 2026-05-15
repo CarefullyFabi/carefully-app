@@ -16,6 +16,7 @@ interface UserState {
   userId: string;
   messageCount: number;
   isPremium: boolean;
+  purchasedMessages: number;
   limitReached: boolean;
   loading: boolean;
 }
@@ -25,6 +26,7 @@ export function useUser() {
     userId: '',
     messageCount: 0,
     isPremium: false,
+    purchasedMessages: 0,
     limitReached: false,
     loading: true,
   });
@@ -44,6 +46,7 @@ export function useUser() {
           userId: data.userId,
           messageCount: data.messageCount,
           isPremium: data.isPremium,
+          purchasedMessages: data.purchasedMessages ?? 0,
           limitReached: data.limitReached,
           loading: false,
         }));
@@ -139,6 +142,6 @@ export function useUser() {
     refresh,
     remainingMessages: state.isPremium
       ? Infinity
-      : Math.max(0, FREE_MESSAGE_LIMIT - state.messageCount),
+      : Math.max(0, FREE_MESSAGE_LIMIT + state.purchasedMessages - state.messageCount),
   };
 }

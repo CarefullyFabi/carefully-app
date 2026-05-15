@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "purchased_messages" integer DEFAULT 0 NOT NULL;

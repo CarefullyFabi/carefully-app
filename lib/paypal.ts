@@ -44,25 +44,25 @@ export async function createOrder(
       purchaseUnits: [
         {
           amount: {
-            currencyCode: "USD",
-            value: "100",
+            currencyCode: "EUR",
+            value: "3.99",
             breakdown: {
               itemTotal: {
-                currencyCode: "USD",
-                value: "100",
+                currencyCode: "EUR",
+                value: "3.99",
               },
             },
           },
           items: [
             {
-              name: "T-Shirt",
+              name: "50 Nachrichten",
               unitAmount: {
-                currencyCode: "USD",
-                value: "100",
+                currencyCode: "EUR",
+                value: "3.99",
               },
               quantity: "1",
-              description: "Super Fresh Shirt",
-              sku: "sku01",
+              description: "50 zusätzliche Nachrichten für Carefully",
+              sku: "messages-50",
             },
           ],
         },

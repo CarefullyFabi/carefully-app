@@ -70,6 +70,7 @@ export default function App() {
             isPremium={user.isPremium}
             limitReached={user.limitReached}
             remainingMessages={user.remainingMessages}
+            purchasedMessages={user.purchasedMessages}
             onLimitReached={(messageCount) => user.updateMessageState(messageCount, true)}
             onMessageSent={(messageCount, limitReached) => user.updateMessageState(messageCount, limitReached)}
             onShowPaywall={() => setShowPaywall(true)}

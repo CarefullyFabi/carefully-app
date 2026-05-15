@@ -25,6 +25,7 @@ interface ChatInterfaceProps {
   isPremium: boolean;
   limitReached: boolean;
   remainingMessages: number;
+  purchasedMessages: number;
   onLimitReached: (messageCount: number) => void;
   onMessageSent: (messageCount: number, limitReached: boolean) => void;
   onShowPaywall: () => void;
@@ -50,7 +51,7 @@ const moodMessages: Record<Mood, string> = {
   'good': 'Mir geht es heute gut!',
 };
 
-export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, onLimitReached, onMessageSent, onShowPaywall }: ChatInterfaceProps) {
+export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent, onShowPaywall }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -310,13 +311,13 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
               onClick={onShowPaywall}
               className="text-xs text-blue-600 font-medium hover:text-blue-700 transition-colors"
             >
-              Nachrichtenlimit erreicht – Upgrade auf Premium ✨
+              Um weiter mit Carefully sprechen zu können, kaufe Dir weitere 50 Nachrichten für 3,99 Euro einmalig
             </button>
           </div>
         )}
         {!isPremium && !limitReached && (
           <p className="text-[0.5625rem] text-slate-400 text-center mb-1">
-            {20 - remainingMessages} von 20 Nachrichten verbraucht
+            {20 + purchasedMessages - remainingMessages} von {20 + purchasedMessages} Nachrichten verbraucht
           </p>
         )}
         <div
