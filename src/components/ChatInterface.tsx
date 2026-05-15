@@ -307,7 +307,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
         {limitReached && (
           <div className="mb-2 text-center">
             <p className="text-xs text-slate-500 mb-2">
-              Sie haben Ihre Anzahl von 20 kostenlosen Nachrichten verbraucht. Laden Sie Ihr Konto auf, um weiterhin mit Carefully zu sprechen.
+              Du hast Dein Freikontingent von 20 Nachrichten aufgebraucht. Um weiterhin mit Carefully zu sprechen, kaufe dir 50 Nachrichten für einmalig 3,99 Euro
             </p>
             <a
               href="https://www.paypal.com/ncp/payment/D527D9A8HQ5E8"
