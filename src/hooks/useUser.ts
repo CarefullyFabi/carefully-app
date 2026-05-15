@@ -18,8 +18,6 @@ interface UserState {
   isPremium: boolean;
   limitReached: boolean;
   loading: boolean;
-  checkoutLoading: boolean;
-  checkoutError: string | null;
 }
 
 export function useUser() {
@@ -29,8 +27,6 @@ export function useUser() {
     isPremium: false,
     limitReached: false,
     loading: true,
-    checkoutLoading: false,
-    checkoutError: null,
   });
 
   const initUser = useCallback(async () => {
@@ -50,7 +46,6 @@ export function useUser() {
           isPremium: data.isPremium,
           limitReached: data.limitReached,
           loading: false,
-          checkoutError: null,
         }));
       } else {
         setState((s) => ({ ...s, userId, loading: false }));
@@ -108,33 +103,12 @@ export function useUser() {
   );
 
   const startCheckout = useCallback(async () => {
-    const userId = getUserId();
-    setState((s) => ({ ...s, checkoutLoading: true, checkoutError: null }));
-    try {
-      const res = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          setState((s) => ({ ...s, checkoutLoading: false, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
-        }
-      } else {
-        let errorMsg = 'Checkout konnte nicht gestartet werden.';
-        try {
-          const errorData = await res.json();
-          if (errorData.error) errorMsg = errorData.error;
-        } catch { /* ignore parse error */ }
-        setState((s) => ({ ...s, checkoutLoading: false, checkoutError: errorMsg }));
-      }
-    } catch {
-      setState((s) => ({ ...s, checkoutLoading: false, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
-    }
+    // Kept for backward compatibility — inline PayPal buttons now handle checkout
   }, []);
+
+  const refresh = useCallback(() => {
+    initUser();
+  }, [initUser]);
 
   const manageSubscription = useCallback(async () => {
     try {
@@ -153,7 +127,7 @@ export function useUser() {
   }, []);
 
   const clearCheckoutError = useCallback(() => {
-    setState((s) => ({ ...s, checkoutError: null }));
+    // No-op — inline PayPal buttons now handle errors
   }, []);
 
   return {
@@ -162,6 +136,7 @@ export function useUser() {
     startCheckout,
     manageSubscription,
     clearCheckoutError,
+    refresh,
     remainingMessages: state.isPremium
       ? Infinity
       : Math.max(0, FREE_MESSAGE_LIMIT - state.messageCount),

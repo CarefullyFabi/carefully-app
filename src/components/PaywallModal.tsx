@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PayPalCheckout } from './PayPalCheckout';
 
 interface PaywallModalProps {
   visible: boolean;
-  loading: boolean;
-  error: string | null;
-  onUpgrade: () => void;
+  userId: string;
+  onPaymentSuccess: () => void;
   onClose: () => void;
 }
 
-export function PaywallModal({ visible, loading, error, onUpgrade, onClose }: PaywallModalProps) {
+export function PaywallModal({ visible, userId, onPaymentSuccess, onClose }: PaywallModalProps) {
+  const [error, setError] = useState<string | null>(null);
+
   return (
     <AnimatePresence>
       {visible && (
@@ -53,13 +55,11 @@ export function PaywallModal({ visible, loading, error, onUpgrade, onClose }: Pa
                 </p>
               </div>
 
-              <button
-                onClick={onUpgrade}
-                disabled={loading}
-                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-xl transition-colors shadow-sm shadow-blue-200/50 text-sm"
-              >
-                {loading ? 'Weiterleitung...' : 'Jetzt upgraden'}
-              </button>
+              <PayPalCheckout
+                userId={userId}
+                onSuccess={onPaymentSuccess}
+                onError={(msg) => setError(msg)}
+              />
 
               {error && (
                 <p className="text-xs text-red-500 mt-3 leading-relaxed">

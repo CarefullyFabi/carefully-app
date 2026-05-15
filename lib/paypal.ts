@@ -1,3 +1,109 @@
+import {
+  ApiError,
+  CheckoutPaymentIntent,
+  Client,
+  Environment,
+  LogLevel,
+  OrdersController,
+} from "@paypal/paypal-server-sdk";
+
+function getClient(): Client {
+  const clientId = Netlify.env.get("PAYPAL_CLIENT_ID");
+  const clientSecret = Netlify.env.get("PAYPAL_CLIENT_SECRET");
+  const sandbox = Netlify.env.get("PAYPAL_SANDBOX");
+
+  if (!clientId || !clientSecret) {
+    throw new Error("PayPal ist nicht konfiguriert.");
+  }
+
+  return new Client({
+    clientCredentialsAuthCredentials: {
+      oAuthClientId: clientId,
+      oAuthClientSecret: clientSecret,
+    },
+    timeout: 0,
+    environment:
+      sandbox === "true" ? Environment.Sandbox : Environment.Production,
+    logging: {
+      logLevel: LogLevel.Info,
+      logRequest: { logBody: true },
+      logResponse: { logHeaders: true },
+    },
+  });
+}
+
+export async function createOrder(
+  cart: Array<{ id: string; quantity: string }>,
+): Promise<{ id: string; status: string }> {
+  const client = getClient();
+  const ordersController = new OrdersController(client);
+
+  const collect = {
+    body: {
+      intent: CheckoutPaymentIntent.Capture,
+      purchaseUnits: [
+        {
+          amount: {
+            currencyCode: "USD",
+            value: "100",
+            breakdown: {
+              itemTotal: {
+                currencyCode: "USD",
+                value: "100",
+              },
+            },
+          },
+          items: [
+            {
+              name: "T-Shirt",
+              unitAmount: {
+                currencyCode: "USD",
+                value: "100",
+              },
+              quantity: "1",
+              description: "Super Fresh Shirt",
+              sku: "sku01",
+            },
+          ],
+        },
+      ],
+    },
+    prefer: "return=minimal",
+  };
+
+  try {
+    const response = await ordersController.createOrder(collect);
+    return response.result as unknown as { id: string; status: string };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw new Error(error.message);
+    }
+    throw error;
+  }
+}
+
+export async function captureOrder(
+  orderID: string,
+): Promise<Record<string, unknown>> {
+  const client = getClient();
+  const ordersController = new OrdersController(client);
+
+  const collect = {
+    id: orderID,
+    prefer: "return=minimal",
+  };
+
+  try {
+    const response = await ordersController.captureOrder(collect);
+    return response.result as unknown as Record<string, unknown>;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw new Error(error.message);
+    }
+    throw error;
+  }
+}
+
 function getPayPalApiUrl(): string {
   const sandbox = Netlify.env.get("PAYPAL_SANDBOX");
   return sandbox === "true"
