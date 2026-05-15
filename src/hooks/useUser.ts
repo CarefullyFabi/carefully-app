@@ -18,6 +18,7 @@ interface UserState {
   isPremium: boolean;
   limitReached: boolean;
   loading: boolean;
+  checkoutLoading: boolean;
   checkoutError: string | null;
 }
 
@@ -28,6 +29,7 @@ export function useUser() {
     isPremium: false,
     limitReached: false,
     loading: true,
+    checkoutLoading: false,
     checkoutError: null,
   });
 
@@ -106,7 +108,7 @@ export function useUser() {
 
   const startCheckout = useCallback(async () => {
     const userId = getUserId();
-    setState((s) => ({ ...s, checkoutError: null }));
+    setState((s) => ({ ...s, checkoutLoading: true, checkoutError: null }));
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
@@ -118,13 +120,13 @@ export function useUser() {
         if (data.url) {
           window.location.href = data.url;
         } else {
-          setState((s) => ({ ...s, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
+          setState((s) => ({ ...s, checkoutLoading: false, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
         }
       } else {
-        setState((s) => ({ ...s, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
+        setState((s) => ({ ...s, checkoutLoading: false, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
       }
     } catch {
-      setState((s) => ({ ...s, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
+      setState((s) => ({ ...s, checkoutLoading: false, checkoutError: 'Checkout konnte nicht gestartet werden.' }));
     }
   }, []);
 
