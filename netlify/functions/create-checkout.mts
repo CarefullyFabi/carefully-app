@@ -1,5 +1,5 @@
 import type { Config, Context } from "@netlify/functions";
-import Stripe from "stripe";
+import { createSubscription } from "../../lib/paypal.js";
 import { db } from "../../db/index.js";
 import { users } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
@@ -10,10 +10,10 @@ export default async (req: Request, context: Context) => {
   }
 
   try {
-    const secretKey = Netlify.env.get("STRIPE_SECRET_KEY");
-    if (!secretKey) {
+    const planId = Netlify.env.get("PAYPAL_PLAN_ID");
+    if (!planId) {
       return Response.json(
-        { error: "Stripe ist nicht konfiguriert." },
+        { error: "PayPal ist nicht konfiguriert." },
         { status: 500 },
       );
     }
@@ -22,10 +22,7 @@ export default async (req: Request, context: Context) => {
     try {
       body = await req.json();
     } catch {
-      return Response.json(
-        { error: "Ungültige Anfrage." },
-        { status: 400 },
-      );
+      return Response.json({ error: "Ungültige Anfrage." }, { status: 400 });
     }
 
     const { userId } = body;
@@ -36,7 +33,10 @@ export default async (req: Request, context: Context) => {
       );
     }
 
-    const existing = await db.select().from(users).where(eq(users.id, userId));
+    const existing = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
     if (existing.length === 0) {
       return Response.json(
         { error: "Benutzer nicht gefunden." },
@@ -44,47 +44,20 @@ export default async (req: Request, context: Context) => {
       );
     }
 
-    const stripe = new Stripe(secretKey);
     const siteUrl = Netlify.env.get("URL") || "http://localhost:8888";
+    const returnUrl = `${siteUrl}?paypal_success=true`;
+    const cancelUrl = `${siteUrl}?paypal_cancelled=true`;
 
-    let session: Stripe.Checkout.Session;
+    let result: { subscriptionId: string; approvalUrl: string };
     try {
-      session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price_data: {
-              currency: "eur",
-              product_data: {
-                name: "Carefully Premium",
-                description:
-                  "Unbegrenzter Zugang zu Carefully – deinem persönlichen Begleiter",
-              },
-              unit_amount: 499,
-              recurring: {
-                interval: "month",
-              },
-            },
-            quantity: 1,
-          },
-        ],
-        mode: "subscription",
-        success_url: `${siteUrl}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${siteUrl}?payment_cancelled=true`,
-        client_reference_id: userId,
-        subscription_data: {
-          metadata: {
-            userId,
-          },
-        },
-        metadata: {
-          userId,
-        },
-      });
+      result = await createSubscription(planId, returnUrl, cancelUrl, userId);
     } catch (err) {
-      console.error("Stripe checkout session creation failed:", err);
+      console.error("PayPal subscription creation failed:", err);
       return Response.json(
-        { error: "Zahlung konnte nicht gestartet werden. Bitte versuche es später erneut." },
+        {
+          error:
+            "Zahlung konnte nicht gestartet werden. Bitte versuche es später erneut.",
+        },
         { status: 502 },
       );
     }
@@ -92,13 +65,19 @@ export default async (req: Request, context: Context) => {
     try {
       await db
         .update(users)
-        .set({ stripeSessionId: session.id, updatedAt: new Date() })
+        .set({
+          paypalSubscriptionId: result.subscriptionId,
+          updatedAt: new Date(),
+        })
         .where(eq(users.id, userId));
     } catch (dbErr) {
-      console.error("Failed to update stripeSessionId:", dbErr);
+      console.error("Failed to update paypalSubscriptionId:", dbErr);
     }
 
-    return Response.json({ sessionId: session.id, url: session.url });
+    return Response.json({
+      subscriptionId: result.subscriptionId,
+      url: result.approvalUrl,
+    });
   } catch (err) {
     console.error("create-checkout unexpected error:", err);
     return Response.json(

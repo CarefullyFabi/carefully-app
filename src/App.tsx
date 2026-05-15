@@ -42,7 +42,11 @@ export default function App() {
             </h1>
             {user.isPremium && (
               <button
-                onClick={() => user.manageSubscription()}
+                onClick={() => {
+                  if (window.confirm('Möchtest du dein Abo wirklich kündigen?')) {
+                    user.manageSubscription();
+                  }
+                }}
                 className="mt-1 text-[0.625rem] text-slate-400 hover:text-slate-600 transition-colors underline underline-offset-2 font-medium"
               >
                 Abo kündigen

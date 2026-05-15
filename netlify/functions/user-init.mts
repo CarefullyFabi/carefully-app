@@ -41,7 +41,7 @@ export default async (req: Request, context: Context) => {
 
   let inheritedCount = 0;
   let inheritedPremium = false;
-  let inheritedStripeSessionId: string | null = null;
+  let inheritedPaypalSubscriptionId: string | null = null;
 
   if (clientIp) {
     const ipUsers = await db
@@ -60,7 +60,7 @@ export default async (req: Request, context: Context) => {
     const premiumUser = ipUsers.find((u) => u.isPremium);
     if (premiumUser) {
       inheritedPremium = true;
-      inheritedStripeSessionId = premiumUser.stripeSessionId;
+      inheritedPaypalSubscriptionId = premiumUser.paypalSubscriptionId;
     }
   }
 
@@ -70,7 +70,7 @@ export default async (req: Request, context: Context) => {
       id: userId,
       messageCount: inheritedCount,
       isPremium: inheritedPremium,
-      stripeSessionId: inheritedStripeSessionId,
+      paypalSubscriptionId: inheritedPaypalSubscriptionId,
       ipAddress: clientIp || null,
     })
     .returning();
