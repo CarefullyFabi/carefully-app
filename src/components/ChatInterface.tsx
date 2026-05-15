@@ -307,11 +307,14 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
       <div className="shrink-0 pt-3 pb-[env(safe-area-inset-bottom)] chat-input-area">
         {limitReached && (
           <div className="mb-2 text-center">
+            <p className="text-xs text-slate-500 mb-2">
+              Sie haben Ihre Anzahl von 20 kostenlosen Nachrichten verbraucht. Laden Sie Ihr Konto auf, um weiterhin mit Carefully zu sprechen.
+            </p>
             <button
               onClick={onShowPaywall}
-              className="text-xs text-blue-600 font-medium hover:text-blue-700 transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full shadow-sm shadow-blue-200/50 hover:bg-blue-700 active:scale-95 transition-all"
             >
-              Um weiter mit Carefully sprechen zu können, kaufe Dir weitere 50 Nachrichten für 3,99 Euro einmalig
+              Hier kaufen
             </button>
           </div>
         )}
