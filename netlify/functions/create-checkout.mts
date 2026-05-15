@@ -38,37 +38,46 @@ export default async (req: Request, context: Context) => {
 
   const siteUrl = Netlify.env.get("URL") || "http://localhost:8888";
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price_data: {
-          currency: "eur",
-          product_data: {
-            name: "Carefully Premium",
-            description:
-              "Unbegrenzter Zugang zu Carefully – deinem persönlichen Begleiter",
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "eur",
+            product_data: {
+              name: "Carefully Premium",
+              description:
+                "Unbegrenzter Zugang zu Carefully – deinem persönlichen Begleiter",
+            },
+            unit_amount: 499,
+            recurring: {
+              interval: "month",
+            },
           },
-          unit_amount: 499,
-          recurring: {
-            interval: "month",
-          },
+          quantity: 1,
         },
-        quantity: 1,
+      ],
+      mode: "subscription",
+      success_url: `${siteUrl}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}?payment_cancelled=true`,
+      subscription_data: {
+        metadata: {
+          userId,
+        },
       },
-    ],
-    mode: "subscription",
-    success_url: `${siteUrl}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${siteUrl}?payment_cancelled=true`,
-    subscription_data: {
       metadata: {
         userId,
       },
-    },
-    metadata: {
-      userId,
-    },
-  });
+    });
+  } catch (err) {
+    console.error("Stripe checkout session creation failed:", err);
+    return Response.json(
+      { error: "Zahlung konnte nicht gestartet werden. Bitte versuche es später erneut." },
+      { status: 502 },
+    );
+  }
 
   await db
     .update(users)

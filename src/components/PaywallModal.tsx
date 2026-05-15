@@ -4,11 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface PaywallModalProps {
   visible: boolean;
   loading: boolean;
+  error: string | null;
   onUpgrade: () => void;
   onClose: () => void;
 }
 
-export function PaywallModal({ visible, loading, onUpgrade, onClose }: PaywallModalProps) {
+export function PaywallModal({ visible, loading, error, onUpgrade, onClose }: PaywallModalProps) {
   return (
     <AnimatePresence>
       {visible && (
@@ -59,6 +60,12 @@ export function PaywallModal({ visible, loading, onUpgrade, onClose }: PaywallMo
               >
                 {loading ? 'Weiterleitung...' : 'Jetzt upgraden'}
               </button>
+
+              {error && (
+                <p className="text-xs text-red-500 mt-3 leading-relaxed">
+                  {error}
+                </p>
+              )}
 
               <p className="text-[0.625rem] text-slate-400 mt-3">
                 Sichere Zahlung über Stripe

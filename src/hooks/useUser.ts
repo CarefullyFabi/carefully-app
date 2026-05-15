@@ -18,6 +18,7 @@ interface UserState {
   isPremium: boolean;
   limitReached: boolean;
   loading: boolean;
+  checkoutError: string | null;
 }
 
 export function useUser() {
@@ -27,6 +28,7 @@ export function useUser() {
     isPremium: false,
     limitReached: false,
     loading: true,
+    checkoutError: null,
   });
 
   const initUser = useCallback(async () => {
@@ -45,6 +47,7 @@ export function useUser() {
           isPremium: data.isPremium,
           limitReached: data.limitReached,
           loading: false,
+          checkoutError: null,
         });
       } else {
         setState((s) => ({ ...s, userId, loading: false }));
@@ -97,19 +100,28 @@ export function useUser() {
   );
 
   const startCheckout = useCallback(async () => {
+    setState((s) => ({ ...s, checkoutError: null }));
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: getUserId() }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        }
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.url) {
+        window.location.href = data.url;
+        return;
       }
-    } catch {}
+      setState((s) => ({
+        ...s,
+        checkoutError: data?.error || 'Zahlung konnte nicht gestartet werden. Bitte versuche es später erneut.',
+      }));
+    } catch {
+      setState((s) => ({
+        ...s,
+        checkoutError: 'Verbindungsfehler. Bitte überprüfe deine Internetverbindung und versuche es erneut.',
+      }));
+    }
   }, []);
 
   const manageSubscription = useCallback(async () => {
@@ -128,11 +140,16 @@ export function useUser() {
     } catch {}
   }, []);
 
+  const clearCheckoutError = useCallback(() => {
+    setState((s) => ({ ...s, checkoutError: null }));
+  }, []);
+
   return {
     ...state,
     updateMessageState,
     startCheckout,
     manageSubscription,
+    clearCheckoutError,
     remainingMessages: state.isPremium
       ? Infinity
       : Math.max(0, FREE_MESSAGE_LIMIT - state.messageCount),
