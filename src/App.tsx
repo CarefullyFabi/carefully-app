@@ -8,13 +8,13 @@ export default function App() {
   const [showPaywall, setShowPaywall] = useState(false);
   const user = useUser();
 
-  const handleUpgrade = () => {
-    user.startCheckout();
+  const handlePaymentSuccess = () => {
+    setShowPaywall(false);
+    user.refresh();
   };
 
   const handleClosePaywall = () => {
     setShowPaywall(false);
-    user.clearCheckoutError();
   };
 
   return (
@@ -128,9 +128,8 @@ export default function App() {
 
       <PaywallModal
         visible={showPaywall}
-        loading={user.checkoutLoading}
-        error={user.checkoutError}
-        onUpgrade={handleUpgrade}
+        userId={user.userId}
+        onPaymentSuccess={handlePaymentSuccess}
         onClose={handleClosePaywall}
       />
     </div>
