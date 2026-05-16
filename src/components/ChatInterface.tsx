@@ -93,6 +93,52 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
     }
   }, [input]);
 
+  useEffect(() => {
+    if (!limitReached) return;
+
+    const containerId = 'paypal-button-container';
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    const scriptId = 'paypal-sdk-script';
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+    const renderButtons = () => {
+      const pp = (window as any).paypal;
+      if (!pp) return;
+      pp.Buttons({
+        createOrder: (_data: any, actions: any) => {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: '3.99',
+                currency_code: 'EUR',
+              },
+              custom_id: userId,
+            }],
+          });
+        },
+        onApprove: (_data: any, actions: any) => {
+          return actions.order.capture().then(() => {
+            window.location.href = '/danke';
+          });
+        },
+      }).render(`#${containerId}`);
+    };
+
+    if (script) {
+      renderButtons();
+    } else {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://www.paypal.com/sdk/js?client-id=BAA8-rg8K_UQaTOMK4RV30AJTtb0pPzesxybHWKrDYzF5lIQolhoRNHAiLtcwWYcfj7MwuTKxhDLky-Sgw&currency=EUR';
+      script.addEventListener('load', renderButtons);
+      document.body.appendChild(script);
+    }
+  }, [limitReached, userId]);
+
   const handleSend = async (directMessage?: string) => {
     const trimmed = directMessage || input.trim();
     if (!trimmed || isTyping) return;
@@ -325,36 +371,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
                 ? 'Du hast Deine 30 Nachrichten aufgebraucht.'
                 : 'Du hast Dein Limit von 20 freien Nachrichten erreicht.'}
             </p>
-            <form action="https://www.paypal.com/ncp/payment/TQJEQS7Q7M9SS" method="post" target="_blank" style={{ display: 'inline-grid', justifyItems: 'center', alignContent: 'start', gap: '0.5rem' }}>
-              <input
-                type="submit"
-                value="Jetzt kaufen"
-                style={{
-                  textAlign: 'center',
-                  border: 'none',
-                  borderRadius: '0.25rem',
-                  minWidth: '11.625rem',
-                  padding: '0 2rem',
-                  height: '2.625rem',
-                  fontWeight: 'bold',
-                  backgroundColor: '#FFD140',
-                  color: '#000000',
-                  fontFamily: '"Helvetica Neue", Arial, sans-serif',
-                  fontSize: '1rem',
-                  lineHeight: '1.25rem',
-                  cursor: 'pointer',
-                }}
-              />
-              <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
-              <section style={{ fontSize: '0.75rem' }}>
-                Abgewickelt durch{' '}
-                <img
-                  src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg"
-                  alt="paypal"
-                  style={{ height: '0.875rem', verticalAlign: 'middle' }}
-                />
-              </section>
-            </form>
+            <div id="paypal-button-container" style={{ minWidth: '12rem' }} />
           </div>
         )}
         {!isPremium && !limitReached && (
