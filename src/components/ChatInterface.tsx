@@ -308,6 +308,36 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
                 ? 'Du hast Deine 30 Nachrichten aufgebraucht.'
                 : 'Du hast Dein Limit von 20 freien Nachrichten erreicht.'}
             </p>
+            <form action="https://www.paypal.com/ncp/payment/TQJEQS7Q7M9SS" method="post" target="_blank" style={{ display: 'inline-grid', justifyItems: 'center', alignContent: 'start', gap: '0.5rem' }}>
+              <input
+                type="submit"
+                value="Jetzt kaufen"
+                style={{
+                  textAlign: 'center',
+                  border: 'none',
+                  borderRadius: '0.25rem',
+                  minWidth: '11.625rem',
+                  padding: '0 2rem',
+                  height: '2.625rem',
+                  fontWeight: 'bold',
+                  backgroundColor: '#FFD140',
+                  color: '#000000',
+                  fontFamily: '"Helvetica Neue", Arial, sans-serif',
+                  fontSize: '1rem',
+                  lineHeight: '1.25rem',
+                  cursor: 'pointer',
+                }}
+              />
+              <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+              <section style={{ fontSize: '0.75rem' }}>
+                Abgewickelt durch{' '}
+                <img
+                  src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg"
+                  alt="paypal"
+                  style={{ height: '0.875rem', verticalAlign: 'middle' }}
+                />
+              </section>
+            </form>
           </div>
         )}
         {!isPremium && !limitReached && (
