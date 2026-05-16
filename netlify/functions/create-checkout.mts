@@ -1,5 +1,5 @@
 import type { Config, Context } from "@netlify/functions";
-import { createSubscription } from "../../lib/paypal.js";
+import { createOrderWithRedirect } from "../../lib/paypal.js";
 import { db } from "../../db/index.js";
 import { users } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
@@ -10,14 +10,6 @@ export default async (req: Request, context: Context) => {
   }
 
   try {
-    const planId = Netlify.env.get("PAYPAL_PLAN_ID");
-    if (!planId) {
-      return Response.json(
-        { error: "PayPal ist nicht konfiguriert." },
-        { status: 500 },
-      );
-    }
-
     let body: { userId?: string };
     try {
       body = await req.json();
@@ -48,11 +40,11 @@ export default async (req: Request, context: Context) => {
     const returnUrl = `${siteUrl}?paypal_success=true`;
     const cancelUrl = `${siteUrl}?paypal_cancelled=true`;
 
-    let result: { subscriptionId: string; approvalUrl: string };
+    let result: { orderId: string; approvalUrl: string };
     try {
-      result = await createSubscription(planId, returnUrl, cancelUrl, userId);
+      result = await createOrderWithRedirect(returnUrl, cancelUrl, userId);
     } catch (err) {
-      console.error("PayPal subscription creation failed:", err);
+      console.error("PayPal order creation failed:", err);
       return Response.json(
         {
           error:
@@ -62,20 +54,8 @@ export default async (req: Request, context: Context) => {
       );
     }
 
-    try {
-      await db
-        .update(users)
-        .set({
-          paypalSubscriptionId: result.subscriptionId,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, userId));
-    } catch (dbErr) {
-      console.error("Failed to update paypalSubscriptionId:", dbErr);
-    }
-
     return Response.json({
-      subscriptionId: result.subscriptionId,
+      orderId: result.orderId,
       url: result.approvalUrl,
     });
   } catch (err) {

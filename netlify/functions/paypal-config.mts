@@ -2,7 +2,6 @@ import type { Config } from "@netlify/functions";
 
 export default async () => {
   const clientId = Netlify.env.get("PAYPAL_CLIENT_ID");
-  const planId = Netlify.env.get("PAYPAL_PLAN_ID");
 
   if (!clientId) {
     return Response.json(
@@ -11,7 +10,7 @@ export default async () => {
     );
   }
 
-  return Response.json({ clientId, planId: planId || null });
+  return Response.json({ clientId });
 };
 
 export const config: Config = {
