@@ -9,7 +9,7 @@ function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
-type Mood = 'very-bad' | 'hurt' | 'sick' | 'tired' | 'annoyed' | 'lonely' | 'good' | 'crazy';
+type Mood = 'very-bad' | 'hurt' | 'sick' | 'tired' | 'annoyed' | 'lonely' | 'good' | 'crazy' | 'anxious';
 
 interface Message {
   id: string;
@@ -46,6 +46,7 @@ const moodOptions: { type: Mood; emoji: string; label: string; animation: object
   { type: 'lonely', emoji: '🫂', label: 'einsam', animation: { scale: [1, 1.1, 1], y: [0, -2, 0], transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' } } },
   { type: 'good', emoji: '😃', label: 'gut', animation: { y: [0, -6, 0], rotate: [0, 5, -5, 0], transition: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' } } },
   { type: 'crazy', emoji: '🤪', label: 'verrückt', animation: { rotate: [0, 15, -15, 10, -10, 0], scale: [1, 1.2, 0.9, 1.1, 1], transition: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } } },
+  { type: 'anxious', emoji: '🥺', label: 'Angstzustände', animation: { scale: [1, 1.08, 1, 1.05, 1], y: [0, -2, 0, -1, 0], transition: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' } } },
 ];
 
 const moodMessages: Record<Mood, string> = {
@@ -57,6 +58,7 @@ const moodMessages: Record<Mood, string> = {
   'lonely': 'Ich fühle mich einsam und allein...',
   'good': 'Mir geht es heute gut!',
   'crazy': 'Ich fühle mich gerade total durch den Wind und aufgedreht!',
+  'anxious': 'Ich habe gerade Angstzustände und fühle mich sehr unruhig...',
 };
 
 export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent }: ChatInterfaceProps) {
