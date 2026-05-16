@@ -144,6 +144,8 @@ export async function createOrderWithRedirect(
   userId: string,
 ): Promise<{ orderId: string; approvalUrl: string }> {
   const accessToken = await getPayPalAccessToken();
+  const normalizedReturnUrl = normalizeRedirectUrl(returnUrl);
+  const normalizedCancelUrl = normalizeRedirectUrl(cancelUrl);
 
   const response = await fetch(
     `${getPayPalApiUrl()}/v2/checkout/orders`,
@@ -184,10 +186,11 @@ export async function createOrderWithRedirect(
         payment_source: {
           paypal: {
             experience_context: {
-              return_url: returnUrl,
-              cancel_url: cancelUrl,
+              return_url: normalizedReturnUrl,
+              cancel_url: normalizedCancelUrl,
               brand_name: "Carefully",
               shipping_preference: "NO_SHIPPING",
+              payment_method_preference: "IMMEDIATE_PAYMENT_REQUIRED",
               user_action: "PAY_NOW",
             },
           },
@@ -210,6 +213,22 @@ export async function createOrderWithRedirect(
   }
 
   return { orderId: data.id, approvalUrl: approveLink.href };
+}
+
+function normalizeRedirectUrl(url: string): string {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("PayPal-Redirect-URL ist ungültig.");
+  }
+
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new Error("PayPal-Redirect-URL muss HTTP oder HTTPS verwenden.");
+  }
+
+  return parsed.toString();
 }
 
 export async function getSubscriptionDetails(
