@@ -307,8 +307,8 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
         {limitReached && (
           <div className="mb-2 text-center">
             <p className="text-xs text-slate-500 mb-2">
-              Du hast Dein Freikontingent von 20 Nachrichten erreicht.
-              Um weiter mit Carefully zu sprechen kaufe Dir für einmalig 3,99 Euro 50 weitere Nachrichten hinzu.
+              Du hast Dein Limit von 20 freien Nachrichten erreicht.
+              Möchtest du weiter mit Carefully schreiben, kaufe dir 30 Nachrichten für 3,99 Euro.
             </p>
             <a
               href="https://www.paypal.com/ncp/payment/D527D9A8HQ5E8"
@@ -316,7 +316,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full shadow-sm shadow-blue-200/50 hover:bg-blue-700 active:scale-95 transition-all no-underline"
             >
-              Hier kaufen
+              Kaufen über PayPal
             </a>
           </div>
         )}

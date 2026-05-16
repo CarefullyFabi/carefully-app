@@ -4,7 +4,7 @@ import { db } from "../../db/index.js";
 import { users } from "../../db/schema.js";
 import { eq, sql } from "drizzle-orm";
 
-const MESSAGES_PER_PURCHASE = 50;
+const MESSAGES_PER_PURCHASE = 30;
 
 export default async (req: Request, _context: Context) => {
   if (req.method !== "POST") {
