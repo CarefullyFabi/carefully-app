@@ -138,16 +138,15 @@ export async function getPayPalAccessToken(): Promise<string> {
   return data.access_token;
 }
 
-export async function createSubscription(
-  planId: string,
+export async function createOrderWithRedirect(
   returnUrl: string,
   cancelUrl: string,
   userId: string,
-): Promise<{ subscriptionId: string; approvalUrl: string }> {
+): Promise<{ orderId: string; approvalUrl: string }> {
   const accessToken = await getPayPalAccessToken();
 
   const response = await fetch(
-    `${getPayPalApiUrl()}/v1/billing/subscriptions`,
+    `${getPayPalApiUrl()}/v2/checkout/orders`,
     {
       method: "POST",
       headers: {
@@ -155,33 +154,62 @@ export async function createSubscription(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        plan_id: planId,
-        custom_id: userId,
-        application_context: {
-          return_url: returnUrl,
-          cancel_url: cancelUrl,
-          brand_name: "Carefully",
-          shipping_preference: "NO_SHIPPING",
-          user_action: "SUBSCRIBE_NOW",
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            custom_id: userId,
+            amount: {
+              currency_code: "EUR",
+              value: "3.99",
+              breakdown: {
+                item_total: {
+                  currency_code: "EUR",
+                  value: "3.99",
+                },
+              },
+            },
+            items: [
+              {
+                name: "30 Nachrichten",
+                unit_amount: {
+                  currency_code: "EUR",
+                  value: "3.99",
+                },
+                quantity: "1",
+                description: "30 zusätzliche Nachrichten für Carefully",
+              },
+            ],
+          },
+        ],
+        payment_source: {
+          paypal: {
+            experience_context: {
+              return_url: returnUrl,
+              cancel_url: cancelUrl,
+              brand_name: "Carefully",
+              shipping_preference: "NO_SHIPPING",
+              user_action: "PAY_NOW",
+            },
+          },
         },
       }),
     },
   );
 
   if (!response.ok) {
-    throw new Error("PayPal-Abo konnte nicht erstellt werden.");
+    throw new Error("PayPal-Bestellung konnte nicht erstellt werden.");
   }
 
   const data = await response.json();
   const approveLink = data.links?.find(
-    (l: { rel: string }) => l.rel === "approve",
+    (l: { rel: string }) => l.rel === "payer-action",
   );
 
   if (!approveLink?.href) {
     throw new Error("PayPal-Genehmigungslink nicht gefunden.");
   }
 
-  return { subscriptionId: data.id, approvalUrl: approveLink.href };
+  return { orderId: data.id, approvalUrl: approveLink.href };
 }
 
 export async function getSubscriptionDetails(
