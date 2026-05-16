@@ -1,6 +1,5 @@
 import {
   ApiError,
-  CheckoutPaymentIntent,
   Client,
   Environment,
   LogLevel,
@@ -30,58 +29,6 @@ function getClient(): Client {
       logResponse: { logHeaders: true },
     },
   });
-}
-
-export async function createOrder(
-  cart: Array<{ id: string; quantity: string }>,
-  userId?: string,
-): Promise<{ id: string; status: string }> {
-  const client = getClient();
-  const ordersController = new OrdersController(client);
-
-  const collect = {
-    body: {
-      intent: CheckoutPaymentIntent.Capture,
-      purchaseUnits: [
-        {
-          ...(userId ? { customId: userId } : {}),
-          amount: {
-            currencyCode: "EUR",
-            value: "3.99",
-            breakdown: {
-              itemTotal: {
-                currencyCode: "EUR",
-                value: "3.99",
-              },
-            },
-          },
-          items: [
-            {
-              name: "30 Nachrichten",
-              unitAmount: {
-                currencyCode: "EUR",
-                value: "3.99",
-              },
-              quantity: "1",
-              description: "30 zusätzliche Nachrichten für Carefully",
-              sku: "messages-30",
-            },
-          ],
-        },
-      ],
-    },
-    prefer: "return=minimal",
-  };
-
-  try {
-    const response = await ordersController.createOrder(collect);
-    return response.result as unknown as { id: string; status: string };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw new Error(error.message);
-    }
-    throw error;
-  }
 }
 
 export async function captureOrder(
@@ -136,99 +83,6 @@ export async function getPayPalAccessToken(): Promise<string> {
 
   const data = await response.json();
   return data.access_token;
-}
-
-export async function createOrderWithRedirect(
-  returnUrl: string,
-  cancelUrl: string,
-  userId: string,
-): Promise<{ orderId: string; approvalUrl: string }> {
-  const accessToken = await getPayPalAccessToken();
-  const normalizedReturnUrl = normalizeRedirectUrl(returnUrl);
-  const normalizedCancelUrl = normalizeRedirectUrl(cancelUrl);
-
-  const response = await fetch(
-    `${getPayPalApiUrl()}/v2/checkout/orders`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        intent: "CAPTURE",
-        purchase_units: [
-          {
-            custom_id: userId,
-            amount: {
-              currency_code: "EUR",
-              value: "3.99",
-              breakdown: {
-                item_total: {
-                  currency_code: "EUR",
-                  value: "3.99",
-                },
-              },
-            },
-            items: [
-              {
-                name: "30 Nachrichten",
-                unit_amount: {
-                  currency_code: "EUR",
-                  value: "3.99",
-                },
-                quantity: "1",
-                description: "30 zusätzliche Nachrichten für Carefully",
-              },
-            ],
-          },
-        ],
-        payment_source: {
-          paypal: {
-            experience_context: {
-              return_url: normalizedReturnUrl,
-              cancel_url: normalizedCancelUrl,
-              brand_name: "Carefully",
-              shipping_preference: "NO_SHIPPING",
-              payment_method_preference: "IMMEDIATE_PAYMENT_REQUIRED",
-              user_action: "PAY_NOW",
-            },
-          },
-        },
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error("PayPal-Bestellung konnte nicht erstellt werden.");
-  }
-
-  const data = await response.json();
-  const approveLink = data.links?.find(
-    (l: { rel: string }) => l.rel === "payer-action",
-  );
-
-  if (!approveLink?.href) {
-    throw new Error("PayPal-Genehmigungslink nicht gefunden.");
-  }
-
-  return { orderId: data.id, approvalUrl: approveLink.href };
-}
-
-function normalizeRedirectUrl(url: string): string {
-  let parsed: URL;
-
-  try {
-    parsed = new URL(url);
-  } catch {
-    throw new Error("PayPal-Redirect-URL ist ungültig.");
-  }
-
-  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-    throw new Error("PayPal-Redirect-URL muss HTTP oder HTTPS verwenden.");
-  }
-
-  return parsed.toString();
 }
 
 export async function getSubscriptionDetails(

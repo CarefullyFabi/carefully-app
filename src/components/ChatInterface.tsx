@@ -121,15 +121,19 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
             }],
           });
         },
-        onApprove: async (data: any, actions: any) => {
-          await actions.order.capture();
+        onApprove: async (data: any) => {
           try {
-            await fetch(`/api/orders/${data.orderID}/capture`, {
+            const res = await fetch(`/api/orders/${data.orderID}/capture`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId }),
             });
-          } catch {}
+            if (!res.ok) {
+              console.error('Payment capture failed');
+            }
+          } catch (err) {
+            console.error('Payment capture error:', err);
+          }
           onPaymentSuccess();
         },
       }).render(`#${containerId}`);
@@ -138,11 +142,16 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
     if (script) {
       renderButtons();
     } else {
-      script = document.createElement('script');
-      script.id = scriptId;
-      script.src = 'https://www.paypal.com/sdk/js?client-id=BAA8-rg8K_UQaTOMK4RV30AJTtb0pPzesxybHWKrDYzF5lIQolhoRNHAiLtcwWYcfj7MwuTKxhDLky-Sgw&currency=EUR';
-      script.addEventListener('load', renderButtons);
-      document.body.appendChild(script);
+      fetch('/api/paypal-config')
+        .then((res) => res.json())
+        .then(({ clientId }) => {
+          script = document.createElement('script');
+          script!.id = scriptId;
+          script!.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR`;
+          script!.addEventListener('load', renderButtons);
+          document.body.appendChild(script!);
+        })
+        .catch((err) => console.error('Failed to load PayPal config:', err));
     }
   }, [limitReached, userId, onPaymentSuccess]);
 
