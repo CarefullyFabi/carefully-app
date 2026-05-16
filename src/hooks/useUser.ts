@@ -64,39 +64,12 @@ export function useUser() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const paypalSuccess = params.get('paypal_success');
-    const subscriptionId = params.get('subscription_id');
     const paypalCancelled = params.get('paypal_cancelled');
 
-    if (paypalSuccess === 'true' && subscriptionId && state.userId) {
-      verifyPayment(state.userId, subscriptionId).then(() => initUser());
-      window.history.replaceState({}, '', window.location.pathname);
-    } else if (paypalCancelled === 'true') {
+    if (paypalCancelled === 'true') {
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [state.userId, initUser]);
-
-  const verifyPayment = async (userId: string, subscriptionId: string) => {
-    try {
-      const res = await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, subscriptionId }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setState((s) => ({
-            ...s,
-            isPremium: true,
-            limitReached: false,
-          }));
-        }
-      }
-    } catch (err) {
-      console.error('Payment verification failed:', err);
-    }
-  };
+  }, []);
 
   const updateMessageState = useCallback(
     (messageCount: number, limitReached: boolean) => {
@@ -105,9 +78,7 @@ export function useUser() {
     [],
   );
 
-  const startCheckout = useCallback(async () => {
-    // Kept for backward compatibility — inline PayPal buttons now handle checkout
-  }, []);
+  const startCheckout = useCallback(async () => {}, []);
 
   const refresh = useCallback(() => {
     initUser();
@@ -129,9 +100,7 @@ export function useUser() {
     } catch {}
   }, []);
 
-  const clearCheckoutError = useCallback(() => {
-    // No-op — inline PayPal buttons now handle errors
-  }, []);
+  const clearCheckoutError = useCallback(() => {}, []);
 
   return {
     ...state,
