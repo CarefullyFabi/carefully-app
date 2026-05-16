@@ -27,6 +27,7 @@ interface ChatInterfaceProps {
   purchasedMessages: number;
   onLimitReached: (messageCount: number) => void;
   onMessageSent: (messageCount: number, limitReached: boolean) => void;
+  onPaymentSuccess: () => void;
 }
 
 const WELCOME_MESSAGE: Message = {
@@ -61,7 +62,7 @@ const moodMessages: Record<Mood, string> = {
   'anxious': 'Ich habe gerade Angstzustände und fühle mich sehr unruhig...',
 };
 
-export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent }: ChatInterfaceProps) {
+export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent, onPaymentSuccess }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -120,10 +121,16 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
             }],
           });
         },
-        onApprove: (_data: any, actions: any) => {
-          return actions.order.capture().then(() => {
-            window.location.href = '/danke';
-          });
+        onApprove: async (data: any, actions: any) => {
+          await actions.order.capture();
+          try {
+            await fetch(`/api/orders/${data.orderID}/capture`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId }),
+            });
+          } catch {}
+          onPaymentSuccess();
         },
       }).render(`#${containerId}`);
     };
@@ -137,7 +144,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
       script.addEventListener('load', renderButtons);
       document.body.appendChild(script);
     }
-  }, [limitReached, userId]);
+  }, [limitReached, userId, onPaymentSuccess]);
 
   const handleSend = async (directMessage?: string) => {
     const trimmed = directMessage || input.trim();
