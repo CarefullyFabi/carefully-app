@@ -39,10 +39,10 @@ export function PaywallModal({ visible, userId, onPaymentSuccess, onClose }: Pay
                 Weitere Nachrichten kaufen
               </h2>
               <p className="text-sm text-slate-500 mb-1">
-                Sie haben Ihre Anzahl von 20 kostenlosen Nachrichten verbraucht.
+                Du hast Dein Limit von 20 freien Nachrichten erreicht.
               </p>
               <p className="text-sm text-slate-500 mb-6">
-                Um weiterhin mit Carefully zu sprechen, laden Sie bitte Ihr Konto auf
+                Möchtest du weiter mit Carefully schreiben, kaufe dir 30 Nachrichten für 3,99 Euro.
               </p>
 
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 mb-6">
@@ -51,7 +51,7 @@ export function PaywallModal({ visible, userId, onPaymentSuccess, onClose }: Pay
                   <span className="text-sm text-slate-500">einmalig</span>
                 </div>
                 <p className="text-xs text-blue-600 font-medium">
-                  50 zusätzliche Nachrichten
+                  30 zusätzliche Nachrichten
                 </p>
               </div>
 

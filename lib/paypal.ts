@@ -55,14 +55,14 @@ export async function createOrder(
           },
           items: [
             {
-              name: "50 Nachrichten",
+              name: "30 Nachrichten",
               unitAmount: {
                 currencyCode: "EUR",
                 value: "3.99",
               },
               quantity: "1",
-              description: "50 zusätzliche Nachrichten für Carefully",
-              sku: "messages-50",
+              description: "30 zusätzliche Nachrichten für Carefully",
+              sku: "messages-30",
             },
           ],
         },
