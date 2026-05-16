@@ -5,8 +5,6 @@ import ReactMarkdown from 'react-markdown';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { geminiService, type Message as GeminiMessage } from '../services/gemini';
-import { PayPalCheckout } from './PayPalCheckout';
-
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
@@ -29,7 +27,6 @@ interface ChatInterfaceProps {
   purchasedMessages: number;
   onLimitReached: (messageCount: number) => void;
   onMessageSent: (messageCount: number, limitReached: boolean) => void;
-  onPaymentSuccess: () => void;
 }
 
 const WELCOME_MESSAGE: Message = {
@@ -52,7 +49,7 @@ const moodMessages: Record<Mood, string> = {
   'good': 'Mir geht es heute gut!',
 };
 
-export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent, onPaymentSuccess }: ChatInterfaceProps) {
+export function ChatInterface({ currentMood, userId, isPremium, limitReached, remainingMessages, purchasedMessages, onLimitReached, onMessageSent }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -307,22 +304,15 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
         {limitReached && (
           <div className="mb-2 text-center">
             <p className="text-xs text-slate-500 mb-2">
-              Du hast Dein Limit von 20 freien Nachrichten erreicht.
-              Möchtest du weiter mit Carefully schreiben, kaufe dir 30 Nachrichten für 3,99 Euro.
+              {purchasedMessages > 0
+                ? 'Du hast Deine 30 Nachrichten aufgebraucht.'
+                : 'Du hast Dein Limit von 20 freien Nachrichten erreicht.'}
             </p>
-            <a
-              href="https://www.paypal.com/ncp/payment/D527D9A8HQ5E8"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full shadow-sm shadow-blue-200/50 hover:bg-blue-700 active:scale-95 transition-all no-underline"
-            >
-              Kaufen über PayPal
-            </a>
           </div>
         )}
         {!isPremium && !limitReached && (
           <p className="text-[0.5625rem] text-slate-400 text-center mb-1">
-            {20 + purchasedMessages - remainingMessages} von {20 + purchasedMessages} Nachrichten verbraucht
+            {(purchasedMessages > 0 ? purchasedMessages : 20) - remainingMessages} von {purchasedMessages > 0 ? purchasedMessages : 20} Nachrichten verbraucht
           </p>
         )}
         <div

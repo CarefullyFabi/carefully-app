@@ -7,11 +7,12 @@ export default async (req: Request, _context: Context) => {
   }
 
   try {
-    const { cart } = (await req.json()) as {
+    const { cart, userId } = (await req.json()) as {
       cart: Array<{ id: string; quantity: string }>;
+      userId?: string;
     };
 
-    const order = await createOrder(cart);
+    const order = await createOrder(cart, userId);
     return Response.json(order);
   } catch (error) {
     console.error("Failed to create order:", error);

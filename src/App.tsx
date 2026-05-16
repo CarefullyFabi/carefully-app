@@ -21,11 +21,13 @@ export default function App() {
               <span className="text-5xl md:text-6xl">C</span>arefully
               {!user.loading && (
                 <span className={`ml-2 text-xs md:text-sm font-sans not-italic tracking-normal align-middle px-2 py-0.5 rounded-full ${
-                  user.isPremium || user.purchasedMessages > 0
+                  user.isPremium
                     ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 border border-amber-200'
-                    : 'bg-blue-50 text-blue-500 border border-blue-200'
+                    : user.purchasedMessages > 0
+                      ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200'
+                      : 'bg-blue-50 text-blue-500 border border-blue-200'
                 }`}>
-                  {user.isPremium || user.purchasedMessages > 0 ? 'Premium' : 'free'}
+                  {user.isPremium ? 'Premium' : user.purchasedMessages > 0 ? 'payed' : 'free'}
                 </span>
               )}
             </h1>
@@ -62,7 +64,6 @@ export default function App() {
             purchasedMessages={user.purchasedMessages}
             onLimitReached={(messageCount) => user.updateMessageState(messageCount, true)}
             onMessageSent={(messageCount, limitReached) => user.updateMessageState(messageCount, limitReached)}
-            onPaymentSuccess={() => user.refresh()}
           />
         </main>
 
