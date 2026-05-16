@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { geminiService, type Message as GeminiMessage } from '../services/gemini';
+import { observePayPalButton } from '../lib/paypal-cleanup';
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
@@ -153,6 +154,8 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
         })
         .catch((err) => console.error('Failed to load PayPal config:', err));
     }
+
+    observePayPalButton();
   }, [limitReached, userId, onPaymentSuccess]);
 
   const handleSend = async (directMessage?: string) => {
@@ -264,7 +267,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
             )}
           </AnimatePresence>
           <div style={{ flex: 1 }} />
-          <div className="relative z-[2] pt-4 pb-2 px-1">
+          <div className="relative z-[2] pt-4 pb-2 px-1 chat-messages">
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
               <motion.div
