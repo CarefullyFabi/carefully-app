@@ -62,23 +62,12 @@ export function useUser() {
     initUser();
   }, [initUser]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const paypalCancelled = params.get('paypal_cancelled');
-
-    if (paypalCancelled === 'true') {
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
-
   const updateMessageState = useCallback(
     (messageCount: number, limitReached: boolean) => {
       setState((s) => ({ ...s, messageCount, limitReached }));
     },
     [],
   );
-
-  const startCheckout = useCallback(async () => {}, []);
 
   const refresh = useCallback(() => {
     initUser();
@@ -100,14 +89,10 @@ export function useUser() {
     } catch {}
   }, []);
 
-  const clearCheckoutError = useCallback(() => {}, []);
-
   return {
     ...state,
     updateMessageState,
-    startCheckout,
     manageSubscription,
-    clearCheckoutError,
     refresh,
     remainingMessages: state.isPremium
       ? Infinity
