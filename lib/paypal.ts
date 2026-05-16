@@ -34,6 +34,7 @@ function getClient(): Client {
 
 export async function createOrder(
   cart: Array<{ id: string; quantity: string }>,
+  userId?: string,
 ): Promise<{ id: string; status: string }> {
   const client = getClient();
   const ordersController = new OrdersController(client);
@@ -43,6 +44,7 @@ export async function createOrder(
       intent: CheckoutPaymentIntent.Capture,
       purchaseUnits: [
         {
+          ...(userId ? { customId: userId } : {}),
           amount: {
             currencyCode: "EUR",
             value: "3.99",

@@ -2,7 +2,7 @@ import type { Config, Context } from "@netlify/functions";
 import { captureOrder } from "../../lib/paypal.js";
 import { db } from "../../db/index.js";
 import { users } from "../../db/schema.js";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 const MESSAGES_PER_PURCHASE = 30;
 
@@ -33,7 +33,8 @@ export default async (req: Request, _context: Context) => {
       await db
         .update(users)
         .set({
-          purchasedMessages: sql`${users.purchasedMessages} + ${MESSAGES_PER_PURCHASE}`,
+          messageCount: 0,
+          purchasedMessages: MESSAGES_PER_PURCHASE,
           updatedAt: new Date(),
         })
         .where(eq(users.id, userId));

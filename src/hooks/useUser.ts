@@ -142,6 +142,6 @@ export function useUser() {
     refresh,
     remainingMessages: state.isPremium
       ? Infinity
-      : Math.max(0, FREE_MESSAGE_LIMIT + state.purchasedMessages - state.messageCount),
+      : Math.max(0, (state.purchasedMessages > 0 ? state.purchasedMessages : FREE_MESSAGE_LIMIT) - state.messageCount),
   };
 }

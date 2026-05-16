@@ -4,6 +4,8 @@ import { db } from "../../db/index.js";
 import { users } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
 
+const MESSAGES_PER_PURCHASE = 30;
+
 export default async (req: Request, context: Context) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -61,6 +63,26 @@ export default async (req: Request, context: Context) => {
     }
 
     return Response.json({ received: true, action: "no_user_id" });
+  }
+
+  if (event.event_type === "PAYMENT.CAPTURE.COMPLETED") {
+    const resource = event.resource;
+    const userId = resource.custom_id;
+
+    if (!userId) {
+      return Response.json({ received: true, action: "no_user_id" });
+    }
+
+    await db
+      .update(users)
+      .set({
+        messageCount: 0,
+        purchasedMessages: MESSAGES_PER_PURCHASE,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    return Response.json({ received: true, action: "messages_reset" });
   }
 
   return Response.json({ received: true, action: "unhandled_event" });

@@ -31,7 +31,7 @@ export default async (req: Request, context: Context) => {
         .set({ ipAddress: clientIp, updatedAt: new Date() })
         .where(eq(users.id, userId));
     }
-    const effectiveLimit = FREE_MESSAGE_LIMIT + (user.purchasedMessages ?? 0);
+    const effectiveLimit = (user.purchasedMessages ?? 0) > 0 ? (user.purchasedMessages ?? 0) : FREE_MESSAGE_LIMIT;
     return Response.json({
       userId: user.id,
       messageCount: user.messageCount,
@@ -87,7 +87,7 @@ export default async (req: Request, context: Context) => {
     })
     .returning();
 
-  const newEffectiveLimit = FREE_MESSAGE_LIMIT + (newUser.purchasedMessages ?? 0);
+  const newEffectiveLimit = (newUser.purchasedMessages ?? 0) > 0 ? (newUser.purchasedMessages ?? 0) : FREE_MESSAGE_LIMIT;
   return Response.json({
     userId: newUser.id,
     messageCount: newUser.messageCount,
