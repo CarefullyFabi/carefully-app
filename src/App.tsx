@@ -27,7 +27,7 @@ export default function App() {
                       ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200'
                       : 'bg-blue-50 text-blue-500 border border-blue-200'
                 }`}>
-                  {user.isPremium ? 'Premium' : user.purchasedMessages > 0 ? 'payed' : 'free'}
+                  {user.isPremium ? 'Premium' : user.purchasedMessages > 0 ? 'payed' : 'payment'}
                 </span>
               )}
             </h1>
@@ -64,6 +64,7 @@ export default function App() {
             purchasedMessages={user.purchasedMessages}
             onLimitReached={(messageCount) => user.updateMessageState(messageCount, true)}
             onMessageSent={(messageCount, limitReached) => user.updateMessageState(messageCount, limitReached)}
+            onPaymentSuccess={() => user.refresh()}
           />
         </main>
 
