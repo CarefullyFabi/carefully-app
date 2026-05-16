@@ -9,7 +9,7 @@ import {
 
 function getClient(): Client {
   const clientId = Netlify.env.get("PAYPAL_CLIENT_ID");
-  const clientSecret = Netlify.env.get("PAYPAL_CLIENT_SECRET");
+  const clientSecret = Netlify.env.get("PAYPAL_SECRET");
   const sandbox = Netlify.env.get("PAYPAL_SANDBOX");
 
   if (!clientId || !clientSecret) {
@@ -115,7 +115,7 @@ function getPayPalApiUrl(): string {
 
 export async function getPayPalAccessToken(): Promise<string> {
   const clientId = Netlify.env.get("PAYPAL_CLIENT_ID");
-  const clientSecret = Netlify.env.get("PAYPAL_CLIENT_SECRET");
+  const clientSecret = Netlify.env.get("PAYPAL_SECRET");
 
   if (!clientId || !clientSecret) {
     throw new Error("PayPal ist nicht konfiguriert.");
