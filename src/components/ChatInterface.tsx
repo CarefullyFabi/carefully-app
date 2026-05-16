@@ -385,10 +385,13 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
       <div className="shrink-0 pt-3 pb-[env(safe-area-inset-bottom)] chat-input-area">
         {limitReached && (
           <div className="mb-2 text-center">
-            <p className="text-xs text-slate-500 mb-2">
+            <p className="text-xs text-slate-500 mb-1">
               {purchasedMessages > 0
                 ? 'Du hast Deine 30 Nachrichten aufgebraucht.'
                 : 'Du hast Dein Limit von 20 freien Nachrichten erreicht.'}
+            </p>
+            <p className="text-xs text-slate-500 mb-3">
+              Um weiter mit Carefully zu schreiben, kaufe dir 30 Nachrichten für einmalig 3,99 Euro hinzu.
             </p>
             <div id="paypal-button-container" style={{ minWidth: '12rem' }} />
           </div>
