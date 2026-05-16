@@ -9,7 +9,7 @@ function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
-type Mood = 'very-bad' | 'neutral' | 'good';
+type Mood = 'very-bad' | 'hurt' | 'sick' | 'tired' | 'annoyed' | 'lonely' | 'good';
 
 interface Message {
   id: string;
@@ -37,15 +37,23 @@ const WELCOME_MESSAGE: Message = {
   timestamp: new Date(),
 };
 
-const moodOptions: { type: Mood; emoji: string; label: string }[] = [
-  { type: 'very-bad', emoji: '😞', label: 'schlecht' },
-  { type: 'neutral', emoji: '😐', label: 'neutral' },
-  { type: 'good', emoji: '😊', label: 'gut' },
+const moodOptions: { type: Mood; emoji: string; label: string; animation: object }[] = [
+  { type: 'very-bad', emoji: '😞', label: 'schlecht', animation: { y: [0, -4, 0], transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' } } },
+  { type: 'hurt', emoji: '🤕', label: 'verletzt', animation: { rotate: [-5, 5, -5], transition: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } } },
+  { type: 'sick', emoji: '🤒', label: 'krank', animation: { scale: [1, 1.15, 1], transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' } } },
+  { type: 'tired', emoji: '😴', label: 'müde', animation: { y: [0, 3, 0], opacity: [1, 0.6, 1], transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' } } },
+  { type: 'annoyed', emoji: '🙄', label: 'genervt', animation: { rotate: [0, 10, -10, 0], transition: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } } },
+  { type: 'lonely', emoji: '🫂', label: 'einsam', animation: { scale: [1, 1.1, 1], y: [0, -2, 0], transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' } } },
+  { type: 'good', emoji: '😃', label: 'gut', animation: { y: [0, -6, 0], rotate: [0, 5, -5, 0], transition: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' } } },
 ];
 
 const moodMessages: Record<Mood, string> = {
   'very-bad': 'Mir geht es gerade sehr schlecht...',
-  'neutral': 'Mir geht es so mittelmässig heute.',
+  'hurt': 'Ich fühle mich verletzt...',
+  'sick': 'Mir geht es nicht gut, ich fühle mich krank...',
+  'tired': 'Ich bin so müde und erschöpft...',
+  'annoyed': 'Ich bin genervt und frustriert...',
+  'lonely': 'Ich fühle mich einsam und allein...',
   'good': 'Mir geht es heute gut!',
 };
 
@@ -254,7 +262,12 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
                           )}
                           style={{ borderRadius: '20px' }}
                         >
-                          <span className="text-base">{opt.emoji}</span>
+                          <motion.span
+                            className="text-base inline-block"
+                            animate={opt.animation}
+                          >
+                            {opt.emoji}
+                          </motion.span>
                           <span className="font-medium">{opt.label}</span>
                         </button>
                       ))}
