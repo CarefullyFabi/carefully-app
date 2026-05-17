@@ -204,6 +204,23 @@ body {
 }
 
 /* ===========================================
+   PayPal Button Container
+   =========================================== */
+
+#paypal-button-container {
+  overflow: visible !important;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.chat-input-area {
+  overflow: visible !important;
+}
+
+/* ===========================================
    Tablet portrait optimizations
    =========================================== */
 
