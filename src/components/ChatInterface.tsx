@@ -298,7 +298,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
   const hasActivity = input.trim().length > 0 || messages.length > 1;
 
   return (
-    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+    <div className={`flex flex-col h-full min-h-0 ${limitReached ? 'overflow-y-auto overflow-x-hidden' : 'overflow-hidden'}`}>
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 pr-1 -mr-1 scroll-smooth overscroll-contain isolate"

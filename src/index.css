@@ -214,10 +214,34 @@ body {
   max-width: 500px;
   margin-left: auto;
   margin-right: auto;
+  height: auto !important;
+  min-height: 0;
+}
+
+#paypal-button-container iframe {
+  max-width: 100%;
 }
 
 .chat-input-area {
   overflow: visible !important;
+}
+
+html.payment-active,
+html.payment-active body,
+html.payment-active #root {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+html.payment-active .app-container,
+html.payment-active main {
+  overflow: visible !important;
+}
+
+@media (max-width: 767px) {
+  html.payment-active .chat-input-area {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
 }
 
 /* ===========================================
