@@ -101,6 +101,9 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
 
     container.innerHTML = '';
 
+    const existingGpay = document.getElementById('googlepay-button-container');
+    if (existingGpay) existingGpay.remove();
+
     const scriptId = 'paypal-sdk-script';
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
 
@@ -137,16 +140,73 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
       }).render(`#${containerId}`);
     };
 
-    if (script) {
+    const initGooglePay = () => {
+      const pp = (window as any).paypal;
+      if (!pp || !pp.Googlepay) return;
+
+      pp.Googlepay().config()
+        .then((googlePayConfig: any) => {
+          if (!googlePayConfig.isEligible) return;
+
+          const gpayContainer = document.createElement('div');
+          gpayContainer.id = 'googlepay-button-container';
+          gpayContainer.style.marginTop = '10px';
+
+          const gpayButton = document.createElement('button');
+          gpayButton.innerText = 'Mit Google Pay bezahlen';
+          gpayButton.style.cssText = 'background-color:#000; color:#fff; border:none; width:100%; padding:12px; font-size:16px; font-weight:500; border-radius:4px; cursor:pointer;';
+
+          gpayContainer.appendChild(gpayButton);
+          const paypalContainer = document.getElementById(containerId);
+          if (paypalContainer?.parentNode) {
+            paypalContainer.parentNode.insertBefore(gpayContainer, paypalContainer.nextSibling);
+          }
+
+          gpayButton.addEventListener('click', async () => {
+            try {
+              const response = await fetch('/api/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId }),
+              });
+              const data = await response.json();
+              const orderId = data.id;
+
+              await pp.Googlepay().confirmOrder({ orderId });
+
+              const captureRes = await fetch(`/api/orders/${orderId}/capture`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId }),
+              });
+              if (!captureRes.ok) {
+                console.error('Payment capture failed');
+              }
+              onPaymentSuccess();
+            } catch (error) {
+              console.error('Google Pay Fehler:', error);
+              alert('Zahlung fehlgeschlagen.');
+            }
+          });
+        })
+        .catch((err: any) => console.error('Google Pay Konfigurationsfehler:', err));
+    };
+
+    const initAll = () => {
       renderButtons();
+      initGooglePay();
+    };
+
+    if (script) {
+      initAll();
     } else {
       fetch('/api/paypal-config')
         .then((res) => res.json())
         .then(({ clientId }) => {
           script = document.createElement('script');
           script!.id = scriptId;
-          script!.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR`;
-          script!.addEventListener('load', renderButtons);
+          script!.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&components=buttons,googlepay`;
+          script!.addEventListener('load', initAll);
           document.body.appendChild(script!);
         })
         .catch((err) => console.error('Failed to load PayPal config:', err));

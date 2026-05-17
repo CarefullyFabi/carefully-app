@@ -31,6 +31,36 @@ function getClient(): Client {
   });
 }
 
+export async function createOrder(
+  value: string,
+  currencyCode: string,
+  customId?: string,
+): Promise<{ id: string }> {
+  const client = getClient();
+  const ordersController = new OrdersController(client);
+
+  const purchaseUnit: Record<string, unknown> = {
+    amount: {
+      currencyCode,
+      value,
+    },
+  };
+  if (customId) {
+    purchaseUnit.customId = customId;
+  }
+
+  const response = await ordersController.createOrder({
+    body: {
+      intent: "CAPTURE",
+      purchaseUnits: [purchaseUnit],
+    } as any,
+    prefer: "return=minimal",
+  });
+
+  const result = response.result as unknown as { id: string };
+  return { id: result.id };
+}
+
 export async function captureOrder(
   orderID: string,
 ): Promise<Record<string, unknown>> {
