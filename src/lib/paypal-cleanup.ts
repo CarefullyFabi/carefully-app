@@ -20,6 +20,14 @@ function hideDistractions(): void {
   });
 }
 
+export function restoreDistractions(): void {
+  SELECTORS_TO_HIDE.forEach((selector) => {
+    document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+      el.style.display = '';
+    });
+  });
+}
+
 function isPayPalButtonRendered(container: HTMLElement): boolean {
   return container.querySelector('iframe, .paypal-buttons, [class*="paypal-button"]') !== null;
 }

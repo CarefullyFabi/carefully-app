@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { geminiService, type Message as GeminiMessage } from '../services/gemini';
-import { observePayPalButton } from '../lib/paypal-cleanup';
+import { observePayPalButton, restoreDistractions } from '../lib/paypal-cleanup';
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
@@ -157,6 +157,12 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
 
     observePayPalButton();
   }, [limitReached, userId, onPaymentSuccess]);
+
+  useEffect(() => {
+    if (!limitReached) {
+      restoreDistractions();
+    }
+  }, [limitReached]);
 
   const handleSend = async (directMessage?: string) => {
     const trimmed = directMessage || input.trim();
