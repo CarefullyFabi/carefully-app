@@ -399,7 +399,7 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
             <p className="text-xs text-slate-500 mb-3">
               Um weiter mit Carefully zu schreiben, kaufe dir 30 Nachrichten für einmalig 3,99 Euro hinzu.
             </p>
-            <div id="paypal-button-container" style={{ minWidth: '12rem' }} />
+            <div id="paypal-button-container" style={{ minWidth: '12rem', width: '100%', maxWidth: '500px', margin: '0 auto' }} />
           </div>
         )}
         {!isPremium && !limitReached && (
