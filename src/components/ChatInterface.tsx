@@ -71,22 +71,19 @@ export function ChatInterface({ currentMood, userId, isPremium, limitReached, re
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  const hasInteracted = useRef(false);
+
   useEffect(() => {
+    if (messages.length > 1) {
+      hasInteracted.current = true;
+    }
+    if (!hasInteracted.current) return;
     const container = scrollRef.current;
     if (!container) return;
     requestAnimationFrame(() => {
       container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
     });
   }, [messages, isTyping]);
-
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const timer = setTimeout(() => {
-      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (inputRef.current) {
